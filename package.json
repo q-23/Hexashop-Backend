@@ -1,0 +1,26 @@
+{
+  "name": "hexashop_backend",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "env-cmd -f ./config/dev.env nodemon src/index.js",
+    "test": "env-cmd -f ./config/test.env jest --watch -i"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "version": "1.0.0",
+  "description": "Backend for fullstack ecommerce app.",
+  "main": "./src/index.js",
+  "author": "Aleksander Kwiatkowski <aleksander.kwiatkowski@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "env-cmd": "^10.1.0",
+    "express": "^4.17.1",
+    "jest": "^25.3.0",
+    "mongoose": "^5.9.9",
+    "multer": "^1.4.2",
+    "nodemon": "^2.0.3",
+    "supertest": "^4.0.2"
+  }
+}
