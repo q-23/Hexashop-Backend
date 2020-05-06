@@ -2,10 +2,12 @@ const request = require('supertest');
 const Product = require('../models/product');
 const app = require('../app');
 
-const { setupDatabase } = require('./fixtures/db')
+const { setupDatabase, productsArray } = require('./fixtures/db')
+const productOne = productsArray[0];
 
 beforeEach(setupDatabase);
 
+// POST
 test('Should create product with, description and price', async () => {
 	const response = await request(app)
 		.post('/product')
@@ -46,7 +48,7 @@ test('Should not create product with price equal or less than zero', async () =>
 		.expect(400)
 
 	expect(response.body._id).toBeFalsy()
-})
+});
 
 test('Should upload product images', async () => {
 	const response = await request(app)
@@ -63,4 +65,52 @@ test('Should upload product images', async () => {
 
 	const product = await Product.findById(response.body._id)
 	expect(product).not.toBeNull()
-})
+});
+
+// GET
+
+test('Should get multiple products', async () => {
+	const response = await request(app)
+		.get('/product')
+		.send()
+		.expect(200)
+
+	expect(response.body).toHaveLength(15)
+});
+
+test('Should use limiter', async () => {
+	const response = await request(app)
+		.get('/product')
+		.query({limit: 10})
+		.send()
+		.expect(200);
+
+	expect(response.body).toHaveLength(10)
+});
+
+test('Should use pagination', async () => {
+	const response = await request(app)
+		.get('/product')
+		.query({limit: 10})
+		.query({skip: 10})
+		.send()
+		.expect(200);
+
+	expect(response.body).toHaveLength(5)
+});
+
+test('Should find product by id', async () => {
+	const response = await request(app)
+		.get(`/product/${productOne._id}`)
+		.send()
+		.expect(200);
+
+	expect(response.body).toBeTruthy();
+});
+
+test('Should not find not existing product', async () => {
+	await request(app)
+		.get(`/product/${productOne._id}23`)
+		.send()
+		.expect(404);
+});

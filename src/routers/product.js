@@ -1,7 +1,8 @@
 const express = require('express');
+const router = new express.Router();
+
 const Product = require('../models/product');
 const multer = require('multer');
-const router = new express.Router();
 
 const upload = multer({
 	limits: {
@@ -25,6 +26,36 @@ router.post('/product', upload.any(), async (req, res) => {
 	} catch (e) {
 		res.status(400).send({ error: 'Please provide all necessary product info.' })
 	}
-})
+});
+
+router.get('/product', async (req,res) => {
+	try {
+		const products = await Product
+			.find({})
+			.limit(Number(req.query.limit))
+			.skip(Number(req.query.skip));
+
+		res.send(products);
+	} catch (e) {
+		res.status(404).send(e)
+	}
+});
+
+router.get('/product/:id', async (req,res) => {
+	const _id = req.params.id;
+
+	try {
+		const product = await Product
+			.findOne({ _id });
+
+		if(!product) {
+			return res.status(404).send();
+		}
+
+		res.send(product);
+	} catch (e) {
+		res.status(404).send(e)
+	}
+});
 
 module.exports = router;
