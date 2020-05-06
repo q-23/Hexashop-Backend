@@ -16,11 +16,8 @@ const productSchema = new mongoose.Schema({
 		required: true,
 		min: 0.01
 	},
-	image_main: {
-		type: Buffer
-	},
-	image_gallery: {
-		type: Buffer
+	images: {
+		type: Array
 	}
 }, {
 	timestamps: true

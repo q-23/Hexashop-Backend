@@ -7,7 +7,7 @@ const { setupDatabase } = require('./fixtures/db')
 beforeEach(setupDatabase);
 
 test('Should create product with, description and price', async () => {
-	const result = await request(app)
+	const response = await request(app)
 		.post('/product')
 		.send({
 			name: 'Produkt pierwszy',
@@ -16,14 +16,13 @@ test('Should create product with, description and price', async () => {
 		})
 		.expect(201)
 
-	expect(result.body).toMatchObject({
+	expect(response.body).toMatchObject({
 		name: 'Produkt pierwszy',
 		description: 'Opis produktu pierwszego',
 		price: 23.23
 	})
 
-	const product = Product.findById(result.body._id);
-
+	const product = Product.findById(response.body._id);
 	expect(product).not.toBeNull();
 });
 
@@ -37,7 +36,7 @@ test('Should not create product without data', async () => {
 });
 
 test('Should not create product with price equal or less than zero', async () => {
-	await request(app)
+	const response = await request(app)
 		.post('/product')
 		.send({
 			name: 'Product',
@@ -45,13 +44,23 @@ test('Should not create product with price equal or less than zero', async () =>
 			price: 0
 		})
 		.expect(400)
+
+	expect(response.body._id).toBeFalsy()
 })
 
-test('Should upload product image', async () => {
-	await request(app)
+test('Should upload product images', async () => {
+	const response = await request(app)
 		.post('/product')
-		.attach('image_main', './src/tests/fixtures/')
+		.attach('images[0]', './src/tests/fixtures/imgtest.png')
+		.field('images[0][name]', 'description')
+		.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
+		.field('images[1][name]', 'description')
+		.field('images[1][main]', true)
 		.field('name', 'Product')
 		.field('description', 'Some desc')
+		.field('price', 23)
 		.expect(201)
+
+	const product = await Product.findById(response.body._id)
+	expect(product).not.toBeNull()
 })
