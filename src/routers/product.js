@@ -44,13 +44,21 @@ router.post('/product', upload.any(), async (req, res) => {
 });
 
 router.get('/product', async (req, res) => {
+	const sort = {};
+
+	if (req.query.sortBy) {
+		const parts = req.query.sortBy.split(':');
+		sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
+	}
+
 	try {
 		const products = await Product
 			.find()
 			.select('name description price image_thumbnail')
 			.limit(Number(req.query.limit))
 			.skip(Number(req.query.skip))
-
+			.sort(sort);
+			
 		res.send(products);
 	} catch (e) {
 		res.status(404).send(e)

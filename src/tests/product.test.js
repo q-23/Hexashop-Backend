@@ -239,6 +239,34 @@ describe('[PRODUCT] - ', () => {
 		expect(products.body.every(el => !('images' in el))).toBeTruthy();
 	});
 
+	test('Should sort products', async () => {
+		await request(app)
+			.post('/product')
+			.send({
+				name: 'Produkt pierwszy',
+				description: 'Opis produktu pierwszego',
+				price: 99.99
+			})
+			.expect(201);
+
+		await request(app)
+			.post('/product')
+			.send({
+				name: 'Produkt drugi',
+				description: 'Opis produktu drugiego',
+				price: 919.89
+			})
+			.expect(201);
+
+		const products = await request(app)
+			.get('/product')
+			.query({ sortBy: 'price:asc'})
+			.expect(200);
+
+		expect(products.body[0].price).toBe(10);
+		expect(products.body[products.body.length - 1].price).toBe(919.89);
+	});
+
 	// DELETE
 
 	test('Should delete product by ID', async () => {
