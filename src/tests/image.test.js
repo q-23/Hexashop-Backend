@@ -15,5 +15,16 @@ describe('[IMAGE] - ', () => {
             .expect(200);
 
         expect(image.header['content-type']).toBe('image/png');
+    });
+
+    test('Should delete images', async () => {
+        const image = await Image.findOne({ description: 'Lorem ipsum' });
+
+        await request(app)
+            .delete(`/image/${image._id}`);
+
+        const imageFound = await Image.findById(image._id);
+        expect(imageFound).toBeNull();
     })
+
 })
