@@ -8,6 +8,7 @@ const chalk = require('chalk');
 router.get('/image/:id', async (req, res) => {
     const id = req.params.id;
     const image = await Image.findById(id);
+
     if (!image) {
         return res.status(404).send()
     }

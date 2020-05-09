@@ -65,6 +65,7 @@ describe('[PRODUCT] - ', () => {
 
 		expect(product).not.toBeNull()
 		expect(product.images.length).toBe(2)
+		// Thumbnail adds one extra photo
 	});
 
 	test('Should not upload not allowed file types files', async () => {
@@ -151,6 +152,26 @@ describe('[PRODUCT] - ', () => {
 
 		product.body.images.forEach(image => expect(image).toHaveProperty('image'))
 	});
+
+	test('Should create thumbnails from main pictures', async () => {
+		const product_saved = await request(app)
+			.post('/product')
+			.attach('images[0]', './src/tests/fixtures/imgtest.png')
+			.field('images[0][description]', 'description')
+			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
+			.field('images[1][description]', 'description')
+			.field('images[1][main]', true)
+			.field('name', 'Product')
+			.field('description', 'Some desc')
+			.field('price', 23)
+			.expect(201);
+
+		const all_products = await request(app)
+			.get('/products');
+
+		// const product_found = all_products.find(product => product._id === product_saved._id);
+		console.log(product_saved.body);
+	})
 
 	// DELETE
 

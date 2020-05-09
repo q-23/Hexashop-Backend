@@ -12,6 +12,9 @@ const imageSchema = new mongoose.Schema({
 	main: {
 		type: Boolean,
 		default: false
+	},
+	thumbnail: {
+		type: Boolean
 	}
 }, {
 	timestamps: true
