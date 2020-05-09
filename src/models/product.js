@@ -16,9 +16,10 @@ const productSchema = new mongoose.Schema({
 		required: true,
 		min: 0.01
 	},
-	images: {
-		type: Array
-	}
+	images: [{
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Image'
+	}]
 }, {
 	timestamps: true
 });

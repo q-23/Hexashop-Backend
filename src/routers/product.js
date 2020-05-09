@@ -2,7 +2,11 @@ const express = require('express');
 const router = new express.Router();
 
 const Product = require('../models/product');
+const Image = require('../models/image');
+
 const multer = require('multer');
+const chalk = require('chalk');
+
 
 const upload = multer({
 	limits: {
@@ -17,23 +21,29 @@ const upload = multer({
 });
 
 router.post('/product', upload.any(), async (req, res) => {
-	const images = !!req.files ? req.files.map((image, index) => ({ image, ...req.body.images[index]})) : [];
-	const product = new Product({...req.body, images});
+	const { images, ...productData } = req.body;
+	const imagesData = (!!req.files ? req.files.map((img, index) => ({ image: img.buffer, ...images[index] })) : []);
 
 	try {
+		const img_data = imagesData.map(async el => await new Image(el).save());
+		const result = await Promise.all(img_data);
+		const image_ids = result.map(({ _id }) => _id);
+		const product = new Product({ ...productData, images: image_ids });
+
 		await product.save();
 		res.status(201).send(product);
 	} catch (e) {
-		res.status(400).send({ error: 'Please provide all necessary product info.' })
+		res.status(400).send(e)
 	}
 });
 
-router.get('/product', async (req,res) => {
+router.get('/product', async (req, res) => {
 	try {
 		const products = await Product
-			.find({})
+			.find()
+			.populate('images')
 			.limit(Number(req.query.limit))
-			.skip(Number(req.query.skip));
+			.skip(Number(req.query.skip))
 
 		res.send(products);
 	} catch (e) {
@@ -41,21 +51,45 @@ router.get('/product', async (req,res) => {
 	}
 });
 
-router.get('/product/:id', async (req,res) => {
+router.get('/product/:id', async (req, res) => {
+	const _id = req.params.id;
+	try {
+		const product = await Product
+			.findOne({ _id })
+			.populate('images');
+			
+		res.status(200).send(product)
+	} catch (e) {
+		console.log(chalk.red('Error: ') + e)
+		res.status(404).send()
+	}
+});
+
+router.delete('/product/:id', async (req, res) => {
 	const _id = req.params.id;
 
 	try {
 		const product = await Product
-			.findOne({ _id });
+			.findOneAndDelete({ _id });
 
-		if(!product) {
+		if (!product) {
 			return res.status(404).send();
 		}
 
 		res.send(product);
 	} catch (e) {
-		res.status(404).send(e)
+		res.status(500).send(e)
 	}
 });
+
+router.delete('/product', async (req, res) => {
+	try {
+		await Product.deleteMany({_id: req.body});
+		res.status(200).send();
+	} catch (e) {
+		console.log(chalk.red('Error deleting files: ') + e);
+		res.status(500).send();
+	}
+})
 
 module.exports = router;
