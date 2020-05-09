@@ -23,13 +23,11 @@ const productSchema = new mongoose.Schema({
 		ref: 'Image'
 	}],
 	image_thumbnail: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Image'
+		type: mongoose.Schema.Types.ObjectId
 	}
 }, {
 	timestamps: true
 });
-
 
 productSchema.pre('save', async function (next) {
 	const product = this;
@@ -45,6 +43,18 @@ productSchema.pre('save', async function (next) {
 			const imageThumbnailSaved = await image_thumbnail.save();
 			product.image_thumbnail = imageThumbnailSaved._id;
 		}
+	next();
+});
+
+productSchema.pre('save', async function (next) {
+	const product = this;
+	await Image.updateMany({ _id: [...product.images, product.image_thumbnail]}, {product_id: product._id});
+	next();
+});
+
+productSchema.pre('findOneAndDelete', async function(next) {
+	const product = this;
+	await Image.deleteMany({ product_id: product._conditions._id });
 	next();
 });
 

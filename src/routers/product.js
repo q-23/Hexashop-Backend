@@ -24,7 +24,13 @@ router.post('/product', upload.any(), async (req, res) => {
 	const { images, ...productData } = req.body;
 	const imagesData = (!!req.files ? req.files.map((img, index) => ({ image: img.buffer, ...images[index] })) : []);
 
+	const mainImageCount = !!imagesData && imagesData.filter(el => !!el.main).length;
+	
 	try {
+		if (imagesData.length && mainImageCount !== 1) {
+			throw new Error('If providing images, there must be exactly one with main flag.')
+		}
+
 		const img_data = imagesData.map(async el => await new Image(el).save());
 		const result = await Promise.all(img_data);
 		const image_ids = result.map(({ _id }) => _id);
@@ -41,7 +47,7 @@ router.get('/product', async (req, res) => {
 	try {
 		const products = await Product
 			.find()
-			.populate('images')
+			.select('name description price image_thumbnail')
 			.limit(Number(req.query.limit))
 			.skip(Number(req.query.skip))
 

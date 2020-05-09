@@ -35,7 +35,7 @@ const productsArray = populateProducts(15);
 const setupProducts = async () => {
 	await Product.deleteMany();
 	await Image.deleteMany();
-	productsArray.forEach(async el => await new Product(el).save())
+	await Promise.all(productsArray.map(async el => await new Product(el).save()));
 };
 
 const setupImages = async () => {

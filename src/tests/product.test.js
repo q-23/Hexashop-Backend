@@ -1,5 +1,6 @@
 const request = require('supertest');
 const Product = require('../models/product');
+const Image = require('../models/image');
 const app = require('../app');
 
 const { setupProducts, productsArray } = require('./fixtures/db')
@@ -65,7 +66,36 @@ describe('[PRODUCT] - ', () => {
 
 		expect(product).not.toBeNull()
 		expect(product.images.length).toBe(2)
-		// Thumbnail adds one extra photo
+	});
+
+	test('Should not allow products with multiple main images', async () => {
+		await request(app)
+			.post('/product')
+			.attach('images[0]', './src/tests/fixtures/imgtest.png')
+			.field('images[0][description]', 'description')
+			.field('images[0][main]', true)
+			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
+			.field('images[1][description]', 'description')
+			.field('images[1][main]', true)
+			.field('name', 'Product')
+			.field('description', 'Some desc')
+			.field('price', 23)
+			.expect(400);
+	});
+
+	test('Should not allow products with images lacking main image', async () => {
+		await request(app)
+			.post('/product')
+			.attach('images[0]', './src/tests/fixtures/imgtest.png')
+			.field('images[0][description]', 'description')
+			.field('images[0][main]', false)
+			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
+			.field('images[1][description]', 'description')
+			.field('images[1][main]', false)
+			.field('name', 'Product')
+			.field('description', 'Some desc')
+			.field('price', 23)
+			.expect(400);
 	});
 
 	test('Should not upload not allowed file types files', async () => {
@@ -84,6 +114,23 @@ describe('[PRODUCT] - ', () => {
 		const product = await Product.findById(response.body._id)
 		expect(product).toBeNull()
 	});
+
+	test('Should assign product id to images', async () => {
+		const response = await request(app)
+			.post('/product')
+			.attach('images[0]', './src/tests/fixtures/imgtest.png')
+			.field('images[0][description]', 'description')
+			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
+			.field('images[1][description]', 'description')
+			.field('images[1][main]', true)
+			.field('name', 'Product')
+			.field('description', 'Some desc')
+			.field('price', 23)
+			.expect(201);
+
+		const imagesSaved = await Image.find({ _id: [...response.body.images, response.body.image_thumbnail] });
+		expect(imagesSaved.every(el => el.product_id)).toBeTruthy();
+	})
 
 	// GET
 
@@ -145,7 +192,7 @@ describe('[PRODUCT] - ', () => {
 			.field('description', 'Some desc')
 			.field('price', 23)
 			.expect(201)
-			const { _id } = response.body;
+		const { _id } = response.body;
 
 		const product = await request(app)
 			.get(`/product/${_id}`);
@@ -166,12 +213,31 @@ describe('[PRODUCT] - ', () => {
 			.field('price', 23)
 			.expect(201);
 
-		const all_products = await request(app)
-			.get('/products');
 
-		// const product_found = all_products.find(product => product._id === product_saved._id);
-		console.log(product_saved.body);
-	})
+		expect(product_saved.body.image_thumbnail).toBeTruthy();
+	});
+
+	test('Should send only tumbnail when fetching bulk products', async () => {
+		await request(app)
+			.post('/product')
+			.attach('images[0]', './src/tests/fixtures/imgtest.png')
+			.field('images[0][description]', 'description')
+			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
+			.field('images[1][description]', 'description')
+			.field('images[1][main]', true)
+			.field('name', 'Product')
+			.field('description', 'Some desc')
+			.field('price', 23)
+			.expect(201);
+
+		const products = await request(app)
+			.get('/product')
+			.send()
+			.expect(200)
+
+		expect(products.body.some(el => 'image_thumbnail' in el)).toBeTruthy();
+		expect(products.body.every(el => !('images' in el))).toBeTruthy();
+	});
 
 	// DELETE
 
@@ -186,7 +252,7 @@ describe('[PRODUCT] - ', () => {
 
 	test('Should delete multiple products', async () => {
 		const [productOne, productTwo, productThree] = productsArray;
-		const product_ids = [productOne, productTwo, productThree].map(({_id}) => _id)
+		const product_ids = [productOne, productTwo, productThree].map(({ _id }) => _id)
 		await request(app)
 			.delete('/product')
 			.send(product_ids)
@@ -197,5 +263,32 @@ describe('[PRODUCT] - ', () => {
 		} catch (e) {
 			console.log(e)
 		}
-	})
+	});
+
+	test('Should delete product images when deleting product', async () => {
+		const response = await request(app)
+			.post('/product')
+			.attach('images[0]', './src/tests/fixtures/imgtest.png')
+			.field('images[0][description]', 'description')
+			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
+			.field('images[1][description]', 'description')
+			.field('images[1][main]', true)
+			.field('name', 'Product')
+			.field('description', 'Some desc')
+			.field('price', 23)
+			.expect(201);
+
+		const { _id, images, image_thumbnail } = response.body;
+
+		await request(app)
+			.delete(`/product/${_id}`)
+			.expect(200);
+
+		try {
+			images.forEach(async el => expect(await Image.findById(el).body).toBeFalsy());
+			expect(await Image.findById(image_thumbnail)).toBeFalsy();
+		} catch (e) {
+			console.log(e)
+		}
+	});
 });
