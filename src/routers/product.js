@@ -58,7 +58,7 @@ router.get('/product', async (req, res) => {
 			.limit(Number(req.query.limit))
 			.skip(Number(req.query.skip))
 			.sort(sort);
-			
+
 		res.send(products);
 	} catch (e) {
 		res.status(404).send(e)
@@ -104,6 +104,21 @@ router.delete('/product', async (req, res) => {
 		console.log(chalk.red('Error deleting files: ') + e);
 		res.status(500).send();
 	}
-})
+});
+
+router.patch(`/product/:id`, async (req, res) => {
+	const { id } = req.params;
+
+	try {
+		const product = await Product.findByIdAndUpdate({ _id: id }, req.body);
+		if (!product) {
+			return res.status(400).send();
+		}
+		res.status(200).send(product);
+	} catch (e) {
+		res.status(500).send();
+		console.log(chalk.red('Error updating product: ') + e);
+	}
+});
 
 module.exports = router;

@@ -319,4 +319,27 @@ describe('[PRODUCT] - ', () => {
 			console.log(e)
 		}
 	});
+
+	// PATCH
+
+	test('Should update existing products', async () => {
+		const productOne = await request(app)
+			.post('/product')
+			.send({ 
+				name: 'asd',
+				description: 'asd',
+				price: 12
+			});
+
+		await request(app)
+			.patch(`/product/${productOne.body._id}`)
+			.send({
+				name: 'Lorem ipsum'
+			})
+			.expect(200);
+
+		const productUpdated = await Product.findById(productOne.body._id);
+
+		expect(productUpdated.name).toBe('Lorem ipsum');
+	})
 });
