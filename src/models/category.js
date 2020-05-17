@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Product = require('./product');
 
 const categorySchema = new mongoose.Schema({
 	category_name: {
@@ -8,6 +9,12 @@ const categorySchema = new mongoose.Schema({
     }
 }, {
 	timestamps: true
+});
+
+categorySchema.pre('findOneAndDelete', async function (next) {
+    const category = this;
+	await Product.updateMany({ category: category._conditions._id}, { $pull: {category: category._conditions._id}});
+	next();
 });
 
 const Category = mongoose.model('Category', categorySchema);

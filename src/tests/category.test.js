@@ -33,4 +33,25 @@ describe('[CATEGORY] - ', () => {
         expect(categoryResponse.body.category_name).toBe('Kategoria pierwsza');
         expect(categoryResponse.body.products.length).toBe(2)
     });
+
+    test('Should get all categories', async () => {
+        const response = await request(app)
+            .get('/category')
+            .expect(200);
+
+        expect(response.body.length).toBe(2);
+    });
+
+    test('Should delete category and update linked products category array', async () => {
+        const category = await Category.find({category_name: 'Kategoria pierwsza'});
+
+        const product = await new Product({ name: 'a', description: 'b', price: 23, category: category[0]._id }).save();
+
+        await request(app)
+            .delete(`/category/${category[0]._id}`)
+            .expect(201);
+        
+        const productRequest = await Product.findById(product._id);
+        expect(productRequest.category.length).toBe(0);
+    })
 })
