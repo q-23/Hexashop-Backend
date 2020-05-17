@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
+
+const Category = require('../../models/category');
 const Product = require('../../models/product');
 const Image = require('../../models/image');
-const Category = require('../../models/category');
 const User = require('../../models/user');
-const fs = require('fs');
 
 const populateProducts = count => {
 	const returnArray = [];
@@ -52,8 +54,42 @@ const setupImages = async () => {
 	await Promise.all(imagesArray.map(async el => await new Image(el).save()))
 }
 
+const userOneId = new mongoose.Types.ObjectId()
+const userOne = {
+	_id: userOneId,
+	name: 'Stefan',
+	surname: 'Kwaśniewski',
+	city: 'Kraków',
+	street: 'Wielicczańska',
+	house_number: '23',
+	email: 'stefan@bolkowski.pl',
+	password: 'asdf1234',
+	postal_code: '12-345',
+	tokens: [{
+		token: jwt.sign({ _id: userOneId }, process.env.JWT_SECRET)
+	}]
+};
+
+const userTwoId = new mongoose.Types.ObjectId()
+const userTwo = {
+	_id: userTwoId,
+	name: 'Aleksander',
+	surname: 'Kwiatkowski',
+	city: 'Gdańsk',
+	street: 'Długa',
+	house_number: '23',
+	email: 'aleksander.kwiatkowski@gmail.com',
+	password: 'abcd1234',
+	postal_code: '80-827',
+	tokens: [{
+		token: jwt.sign({ _id: userTwoId }, process.env.JWT_SECRET)
+	}]
+};
+
 const setupUsers = async () => {
 	await User.deleteMany();
+	await new User(userOne).save();
+	await new User(userTwo).save();
 }
 
 module.exports = {
@@ -61,5 +97,9 @@ module.exports = {
 	imagesArray,
 	setupUsers,
 	setupProducts,
-	productsArray
-}
+	productsArray,
+	userOneId,
+	userOne,
+	userTwoId,
+	userTwo
+};
