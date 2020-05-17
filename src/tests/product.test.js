@@ -1,6 +1,7 @@
 const request = require('supertest');
 const Product = require('../models/product');
 const Image = require('../models/image');
+const Category = require('../models/category');
 const app = require('../app');
 
 const { setupProducts, productsArray } = require('./fixtures/db')
@@ -10,7 +11,7 @@ beforeEach(setupProducts);
 
 // POST
 describe('[PRODUCT] - ', () => {
-	test('Should create product with, description and price', async () => {
+	test('Should create product with name, description and price', async () => {
 		const response = await request(app)
 			.post('/product')
 			.send({
@@ -29,6 +30,27 @@ describe('[PRODUCT] - ', () => {
 		const product = Product.findById(response.body._id);
 		expect(product).not.toBeNull();
 	});
+
+	test('Should create product with category and create relation', async () => {
+		const response = await request(app)
+			.post('/product')
+			.send({
+				name: 'Produkt pierwszy',
+				description: 'Opis produktu pierwszego',
+				price: 23.23
+			})
+			.expect(201)
+
+		expect(response.body).toMatchObject({
+			name: 'Produkt pierwszy',
+			description: 'Opis produktu pierwszego',
+			price: 23.23
+		})
+
+		const product = Product.findById(response.body._id);
+		expect(product).not.toBeNull();
+	});
+
 
 	test('Should not create product without data', async () => {
 		await request(app)
@@ -263,8 +285,32 @@ describe('[PRODUCT] - ', () => {
 			.query({ sortBy: 'price:asc'})
 			.expect(200);
 
-		expect(products.body[0].price).toBe(10);
-		expect(products.body[products.body.length - 1].price).toBe(919.89);
+		const productsPrices = products.body.map(({price}) => price);
+		expect(productsPrices.sort((a, b) => a.price - b.price)).toEqual(productsPrices);
+	});
+
+	test("Should get product with it's categories", async ()=> {
+		const category = await Category.find({ category_name: 'Kategoria pierwsza'});
+		const product = await new Product({name: 'prod', description: 'desc', price: 23, category: category[0]._id}).save();
+		
+		const productGet = await request(app)
+			.get(`/product/${product._id}`)
+			.expect(200);
+
+		expect(productGet.body.category[0]).toMatchObject({ category_name: 'Kategoria pierwsza'})
+	});
+
+	test('Should get product with two categories', async () => {
+		const category = await Category.find({ category_name: 'Kategoria pierwsza'});
+		const categoryTwo = await Category.find({ category_name: 'Kategoria druga'});
+		const product = await new Product({name: 'produkt', description: 'opis', price: 23, category: [category[0]._id, categoryTwo[0]._id]}).save();
+		
+		const productGet = await request(app)
+			.get(`/product/${product._id}`)
+			.expect(200);
+
+		expect(productGet.body.category[0]).toMatchObject({ category_name: 'Kategoria pierwsza'})
+		expect(productGet.body.category[1]).toMatchObject({ category_name: 'Kategoria druga'})
 	});
 
 	// DELETE

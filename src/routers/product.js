@@ -25,7 +25,7 @@ router.post('/product', upload.any(), async (req, res) => {
 	const imagesData = (!!req.files ? req.files.map((img, index) => ({ image: img.buffer, ...images[index] })) : []);
 
 	const mainImageCount = !!imagesData && imagesData.filter(el => !!el.main).length;
-	
+
 	try {
 		if (imagesData.length && mainImageCount !== 1) {
 			throw new Error('If providing images, there must be exactly one with main flag.')
@@ -70,6 +70,7 @@ router.get('/product/:id', async (req, res) => {
 	try {
 		const product = await Product
 			.findOne({ _id })
+			.populate('category')
 			.populate('images');
 			
 		res.status(200).send(product)

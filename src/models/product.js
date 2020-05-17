@@ -24,7 +24,11 @@ const productSchema = new mongoose.Schema({
 	}],
 	image_thumbnail: {
 		type: mongoose.Schema.Types.ObjectId
-	}
+	},
+	category: [{
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Category'
+	}]
 }, {
 	timestamps: true
 });
