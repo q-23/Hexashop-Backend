@@ -63,6 +63,25 @@ router.delete('/category/:id', async (req, res) => {
         console.log(chalk.red('Error deleting category: ') + e);
         res.status(500).send();
     }
+});
+
+router.patch('/category/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const category = await Category.findOneAndUpdate({ _id: id }, req.body, {
+            new: true
+          });
+
+        if(!category) {
+            res.status(404).send();
+        };
+
+        res.status(201).send(category);
+    } catch (e) {
+        console.log(chalk.red('Error updating category: ') + e);
+        res.status(500).send();
+    }
 })
 
 module.exports = router;

@@ -53,5 +53,16 @@ describe('[CATEGORY] - ', () => {
         
         const productRequest = await Product.findById(product._id);
         expect(productRequest.category.length).toBe(0);
-    })
+    });
+
+    test('Should update category', async() => {
+        const category = await Category.find({category_name: 'Kategoria pierwsza'});
+
+        const categoryUpdated = await request(app)
+            .patch(`/category/${category[0]._id}`)
+            .send({ category_name: 'Kategoria trzecia' })
+            .expect(201);
+
+        expect(categoryUpdated.body.category_name).toBe('Kategoria trzecia');
+    });
 })
