@@ -28,26 +28,26 @@ describe('[IMAGE] - ', () => {
         expect(imageFound).toBeNull();
     });
 
-    // test('Should edit images', async () => {
-    //     const image = await Image.findOne({ main: false });
+    test('Should edit images', async () => {
+        const image = await Image.findOne({ main: false });
 
-    //     await request(app)
-    //         .patch(`/image/${image._id}`)
-    //         .field('description', 'new desc')
-    //         .attach('image', './src/tests/fixtures/imgtest.png')
-    //         // .send({description: 'new desc'})
-    //         .expect(200);
+        await request(app)
+            .patch(`/image/${image._id}`)
+            .field('description', 'new desc')
+            .attach('image', './src/tests/fixtures/imgtest.png')
+            // .send({description: 'new desc'})
+            .expect(200);
 
-    //     const returnChecksum = file => {
-    //         return crypto
-    //             .createHash('md5')
-    //             .update(file, 'utf8')
-    //             .digest('hex')
-    //     }
+        const returnChecksum = file => {
+            return crypto
+                .createHash('md5')
+                .update(file, 'utf8')
+                .digest('hex')
+        }
 
-    //     const imageEdited = await Image.findById(image._id);
-    //     const newImageChecksum = returnChecksum(fs.readFileSync(__dirname + '/fixtures/imgtest.png'));
-    //     expect(returnChecksum(imageEdited.image)).toBe(newImageChecksum);
-    //     expect(imageEdited.description).toBe('new desc');
-    // });
+        const imageEdited = await Image.findById(image._id);
+        const newImageChecksum = returnChecksum(fs.readFileSync(__dirname + '/fixtures/imgtest.png'));
+        expect(returnChecksum(imageEdited.image)).toBe(newImageChecksum);
+        expect(imageEdited.description).toBe('new desc');
+    });
 })
