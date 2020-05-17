@@ -72,7 +72,7 @@ router.get('/product/:id', async (req, res) => {
 			.findOne({ _id })
 			.populate('category')
 			.populate('images');
-			
+
 		res.status(200).send(product)
 	} catch (e) {
 		console.log(chalk.red('Error: ') + e)
@@ -99,7 +99,7 @@ router.delete('/product/:id', async (req, res) => {
 
 router.delete('/product', async (req, res) => {
 	try {
-		await Product.deleteMany({_id: req.body});
+		await Product.deleteMany({ _id: req.body });
 		res.status(200).send();
 	} catch (e) {
 		console.log(chalk.red('Error deleting files: ') + e);

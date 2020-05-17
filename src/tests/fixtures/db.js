@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Product = require('../../models/product');
 const Image = require('../../models/image');
 const Category = require('../../models/category');
+const User = require('../../models/user');
 const fs = require('fs');
 
 const populateProducts = count => {
@@ -51,9 +52,14 @@ const setupImages = async () => {
 	await Promise.all(imagesArray.map(async el => await new Image(el).save()))
 }
 
+const setupUsers = async () => {
+	await User.deleteMany();
+}
+
 module.exports = {
 	setupImages,
 	imagesArray,
+	setupUsers,
 	setupProducts,
 	productsArray
 }

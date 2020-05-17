@@ -9,9 +9,9 @@ const chalk = require('chalk');
 router.post('/category', async (req, res) => {
     try {
         const category = await new Category(req.body).save();
-    
+
         res.status(201).send(category)
-    } catch(e) {
+    } catch (e) {
         console.log(chalk.red('Error adding category: ') + e);
         res.status(400).send()
     }
@@ -22,15 +22,15 @@ router.get('/category/:id', async (req, res) => {
 
     try {
         const category = await Category.findById(id);
-        const products = await Product.find({category: id});
+        const products = await Product.find({ category: id });
 
         const { category_name } = category;
 
-        if(!category) {
+        if (!category) {
             res.status(404).send();
         };
 
-        res.send({ 
+        res.send({
             category_name,
             products
         })
@@ -55,7 +55,7 @@ router.delete('/category/:id', async (req, res) => {
 
     try {
         const category = await Category.findByIdAndDelete(id);
-        if(!category) {
+        if (!category) {
             res.status(404).send();
         }
         res.status(201).send();
@@ -71,9 +71,9 @@ router.patch('/category/:id', async (req, res) => {
     try {
         const category = await Category.findOneAndUpdate({ _id: id }, req.body, {
             new: true
-          });
+        });
 
-        if(!category) {
+        if (!category) {
             res.status(404).send();
         };
 

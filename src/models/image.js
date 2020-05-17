@@ -16,7 +16,7 @@ const imageSchema = new mongoose.Schema({
 	thumbnail: {
 		type: Boolean
 	},
-	product_id : {
+	product_id: {
 		type: mongoose.Schema.Types.ObjectId
 	}
 }, {

@@ -282,35 +282,35 @@ describe('[PRODUCT] - ', () => {
 
 		const products = await request(app)
 			.get('/product')
-			.query({ sortBy: 'price:asc'})
+			.query({ sortBy: 'price:asc' })
 			.expect(200);
 
-		const productsPrices = products.body.map(({price}) => price);
+		const productsPrices = products.body.map(({ price }) => price);
 		expect(productsPrices.sort((a, b) => a.price - b.price)).toEqual(productsPrices);
 	});
 
-	test("Should get product with it's categories", async ()=> {
-		const category = await Category.find({ category_name: 'Kategoria pierwsza'});
-		const product = await new Product({name: 'prod', description: 'desc', price: 23, category: category[0]._id}).save();
-		
+	test("Should get product with it's categories", async () => {
+		const category = await Category.find({ category_name: 'Kategoria pierwsza' });
+		const product = await new Product({ name: 'prod', description: 'desc', price: 23, category: category[0]._id }).save();
+
 		const productGet = await request(app)
 			.get(`/product/${product._id}`)
 			.expect(200);
 
-		expect(productGet.body.category[0]).toMatchObject({ category_name: 'Kategoria pierwsza'})
+		expect(productGet.body.category[0]).toMatchObject({ category_name: 'Kategoria pierwsza' })
 	});
 
 	test('Should get product with two categories', async () => {
-		const category = await Category.find({ category_name: 'Kategoria pierwsza'});
-		const categoryTwo = await Category.find({ category_name: 'Kategoria druga'});
-		const product = await new Product({name: 'produkt', description: 'opis', price: 23, category: [category[0]._id, categoryTwo[0]._id]}).save();
-		
+		const category = await Category.find({ category_name: 'Kategoria pierwsza' });
+		const categoryTwo = await Category.find({ category_name: 'Kategoria druga' });
+		const product = await new Product({ name: 'produkt', description: 'opis', price: 23, category: [category[0]._id, categoryTwo[0]._id] }).save();
+
 		const productGet = await request(app)
 			.get(`/product/${product._id}`)
 			.expect(200);
 
-		expect(productGet.body.category[0]).toMatchObject({ category_name: 'Kategoria pierwsza'})
-		expect(productGet.body.category[1]).toMatchObject({ category_name: 'Kategoria druga'})
+		expect(productGet.body.category[0]).toMatchObject({ category_name: 'Kategoria pierwsza' })
+		expect(productGet.body.category[1]).toMatchObject({ category_name: 'Kategoria druga' })
 	});
 
 	// DELETE
@@ -371,7 +371,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should update existing products', async () => {
 		const productOne = await request(app)
 			.post('/product')
-			.send({ 
+			.send({
 				name: 'asd',
 				description: 'asd',
 				price: 12

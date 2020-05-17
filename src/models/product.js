@@ -35,28 +35,28 @@ const productSchema = new mongoose.Schema({
 
 productSchema.pre('save', async function (next) {
 	const product = this;
-		if(product.images.length) {
-			const image_main = await Image.find({ _id: product.images, main: true });
+	if (product.images.length) {
+		const image_main = await Image.find({ _id: product.images, main: true });
 
-			const buffer = await sharp(image_main[0].image).resize({
-				width: 250,
-				height: 250
-			}).png().toBuffer();
+		const buffer = await sharp(image_main[0].image).resize({
+			width: 250,
+			height: 250
+		}).png().toBuffer();
 
-			const image_thumbnail = new Image({ image: buffer, thumbnail: true });
-			const imageThumbnailSaved = await image_thumbnail.save();
-			product.image_thumbnail = imageThumbnailSaved._id;
-		}
+		const image_thumbnail = new Image({ image: buffer, thumbnail: true });
+		const imageThumbnailSaved = await image_thumbnail.save();
+		product.image_thumbnail = imageThumbnailSaved._id;
+	}
 	next();
 });
 
 productSchema.pre('save', async function (next) {
 	const product = this;
-	await Image.updateMany({ _id: [...product.images, product.image_thumbnail]}, {product_id: product._id});
+	await Image.updateMany({ _id: [...product.images, product.image_thumbnail] }, { product_id: product._id });
 	next();
 });
 
-productSchema.pre('findOneAndDelete', async function(next) {
+productSchema.pre('findOneAndDelete', async function (next) {
 	const product = this;
 	await Image.deleteMany({ product_id: product._conditions._id });
 	next();
