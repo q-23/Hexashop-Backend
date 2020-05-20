@@ -65,6 +65,7 @@ const userOne = {
 	email: 'stefan@bolkowski.pl',
 	password: 'asdf1234',
 	postal_code: '12-345',
+	isAdmin: true,
 	tokens: [{
 		token: jwt.sign({ _id: userOneId }, process.env.JWT_SECRET)
 	}]

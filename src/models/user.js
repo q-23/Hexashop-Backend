@@ -54,6 +54,10 @@ const userSchema = new mongoose.Schema({
 			if (value.toLowerCase().includes('password')) throw new Error('Password must not include the word "password".')
 		}
 	},
+	isAdmin: {
+		type: Boolean,
+		default: false
+	},
 	tokens: [{
 		token: {
 			type: String,

@@ -1,9 +1,7 @@
 const request = require('supertest');
 const User = require('../models/user');
 const app = require('../app');
-const { setupUsers, userTwo, userTwoId } = require('./fixtures/db.js');
-
-const { sendApiKey, send } = require('./__mocks__/@sendgrid/mail');
+const { setupUsers, userTwo, userTwoId, userOne } = require('./fixtures/db.js');
 
 beforeEach(setupUsers);
 
@@ -144,5 +142,41 @@ describe('[USER] - ', () => {
 
         const { password, _id, ...userData } = userTwo;
         expect(accountResponse.body).toMatchObject(userData);
+    });
+
+    test('Should add admin users', async () => {
+        const adminUserResponse = await request(app)
+            .post('/user')
+            .send({
+                name: 'Jan',
+                surname: 'Kowalski',
+                city: 'Łódź',
+                street: 'Piotrkowska',
+                house_number: '93',
+                email: 'jan@kowalski.pl',
+                password: 'asdf1234',
+                postal_code: '12-345',
+                isAdmin: true,
+            }).expect(201);
+
+        expect(adminUserResponse.body.user.isAdmin).toBeTruthy()
+    });
+
+    test('Should not let non administrative users add new products', async () => {
+        const { email, password } = userTwo;
+        const response = await request(app)
+            .post('/user/login')
+            .send({ email, password })
+            .expect(200);
+
+        await request(app)
+            .post('/product')
+            .set('Authorization', `Bearer ${response.body.user.tokens[0].token}`)
+            .send({
+                name: 'asd',
+                description: 'asdg',
+                price: 23
+            })
+            .expect(403)
     })
 })

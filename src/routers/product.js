@@ -4,6 +4,7 @@ const router = new express.Router();
 const Product = require('../models/product');
 const Image = require('../models/image');
 
+const auth = require('../middleware/auth.js');
 const multer = require('multer');
 const chalk = require('chalk');
 
@@ -20,7 +21,7 @@ const upload = multer({
 	}
 });
 
-router.post('/product', upload.any(), async (req, res) => {
+router.post('/product', auth('admin'), upload.any(), async (req, res) => {
 	const { images, ...productData } = req.body;
 	const imagesData = (!!req.files ? req.files.map((img, index) => ({ image: img.buffer, ...images[index] })) : []);
 

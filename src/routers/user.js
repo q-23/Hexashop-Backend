@@ -31,7 +31,7 @@ router.post('/user/login', async (req, res) => {
 	}
 });
 
-router.patch('/user', auth, async (req,res) => {
+router.patch('/user', auth(), async (req,res) => {
 	const updates = Object.keys(req.body);
 	const notAllowedUpdatesArray = ['email'];
 	const isValidOperation = !updates.every(el => notAllowedUpdatesArray.includes(el));
@@ -49,7 +49,7 @@ router.patch('/user', auth, async (req,res) => {
 	}
 });
 
-router.get('/user/me', auth, async (req, res) => {
+router.get('/user/me', auth(), async (req, res) => {
 	try {
 		res.status(200).send(req.user);
 	} catch (e) {
