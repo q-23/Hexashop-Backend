@@ -3,6 +3,7 @@ const router = new express.Router();
 
 const User = require('../models/user');
 const auth = require('../middleware/auth.js');
+
 const { sendWelcomeEmail } = require('../emails/account');
 
 const chalk = require('chalk');
@@ -47,5 +48,14 @@ router.patch('/user', auth, async (req,res) => {
 		res.status(400).send(e);
 	}
 });
+
+router.get('/user/me', auth, async (req, res) => {
+	try {
+		res.status(200).send(req.user);
+	} catch (e) {
+		console.log(e)
+		res.status(500).send()
+	}
+})
 
 module.exports = router;

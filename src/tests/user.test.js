@@ -3,6 +3,8 @@ const User = require('../models/user');
 const app = require('../app');
 const { setupUsers, userTwo, userTwoId } = require('./fixtures/db.js');
 
+const { sendApiKey, send } = require('./__mocks__/@sendgrid/mail');
+
 beforeEach(setupUsers);
 
 describe('[USER] - ', () => {
@@ -46,9 +48,9 @@ describe('[USER] - ', () => {
         await request(app)
             .post('/user')
             .send(userCredentials)
-            .expect(201);        
+            .expect(201);
 
-        const err = await request(app)
+        await request(app)
             .post('/user')
             .send(userCredentials)
             .expect(400);
@@ -125,5 +127,22 @@ describe('[USER] - ', () => {
             .set('Authorization', `Bearer ${response.body.user.tokens[0].token}`)
             .send({ name: 'Jan' })
             .expect(200);
+    });
+
+    test("Should get user's account", async () => {
+        const loginResponse = await request(app)
+            .post('/user/login')
+            .send({
+                email: userTwo.email,
+                password: userTwo.password
+            })
+            .expect(200);
+        const accountResponse = await request(app)
+            .get('/user/me')
+            .set('Authorization', `Bearer ${loginResponse.body.user.tokens[0].token}`)
+            .expect(200)
+
+        const { password, _id, ...userData } = userTwo;
+        expect(accountResponse.body).toMatchObject(userData);
     })
 })
