@@ -347,6 +347,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should delete product by ID', async () => {
 		await request(app)
 			.delete(`/product/${productTwo._id}`)
+			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
 			.expect(200);
 
 		const product = Product.findById(productTwo._id);
@@ -357,7 +358,8 @@ describe('[PRODUCT] - ', () => {
 		const [productOne, productTwo, productThree] = productsArray;
 		const product_ids = [productOne, productTwo, productThree].map(({ _id }) => _id)
 		await request(app)
-			.delete('/product')
+			.delete('/product')			
+			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
 			.send(product_ids)
 			.expect(200);
 
@@ -386,6 +388,7 @@ describe('[PRODUCT] - ', () => {
 
 		await request(app)
 			.delete(`/product/${_id}`)
+			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
 			.expect(200);
 
 		try {

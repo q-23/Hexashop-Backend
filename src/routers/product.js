@@ -80,7 +80,7 @@ router.get('/product/:id', async (req, res) => {
 	}
 });
 
-router.delete('/product/:id', async (req, res) => {
+router.delete('/product/:id', auth('admin'), async (req, res) => {
 	const _id = req.params.id;
 
 	try {
@@ -97,7 +97,7 @@ router.delete('/product/:id', async (req, res) => {
 	}
 });
 
-router.delete('/product', async (req, res) => {
+router.delete('/product', auth('admin'), async (req, res) => {
 	try {
 		await Product.deleteMany({ _id: req.body });
 		res.status(200).send();
@@ -107,7 +107,7 @@ router.delete('/product', async (req, res) => {
 	}
 });
 
-router.patch(`/product/:id`, async (req, res) => {
+router.patch(`/product/:id`, auth('admin'), async (req, res) => {
 	const { id } = req.params;
 
 	try {
