@@ -50,8 +50,8 @@ const userSchema = new mongoose.Schema({
 		required: true,
 		trim: true,
 		validate(value) {
-			if(value.length < 7) throw new Error('Password must be at least 7 characters long.');
-			if(value.toLowerCase().includes('password')) throw new Error('Password must not include the word "password".')
+			if (value.length < 7) throw new Error('Password must be at least 7 characters long.');
+			if (value.toLowerCase().includes('password')) throw new Error('Password must not include the word "password".')
 		}
 	},
 	tokens: [{
@@ -74,27 +74,43 @@ userSchema.methods.generateAuthToken = async function () {
 	const user = this;
 	const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
 
-	user.tokens = user.tokens.concat({ token });
-	await user.save();
+	try {
+		await user.save();
+		user.tokens = user.tokens.concat({ token });
+	} catch (e) {
 
-	return token
+	}
+
+	return token;
 };
 
 userSchema.statics.findByCredentials = async (email, password) => {
 	const user = await User.findOne({ email });
 
 	if (!user) {
-		throw new Error('Unable to login')
+		throw new Error('Unable to login.')
 	}
 
 	const isMatch = await bcrypt.compare(password, user.password);
 
 	if (!isMatch) {
-		throw new Error('Unable to login')
+		throw new Error('Unable to login.')
 	}
 
 	return user
 };
+
+userSchema.post('save', function (error, doc, next) {
+	if (error.name === 'MongoError' && error.code === 11000) {
+		next(new Error('The provided E-mail is already taken.'));
+	}
+	if (error.name === 'ValidationError') {
+		next(new Error(`The following fields are missing: ${Object.entries(error.errors).map(el => el[0]).join(', ')}.`));
+	}
+	else {
+		next(error);
+	}
+});
 
 const User = mongoose.model('User', userSchema);
 

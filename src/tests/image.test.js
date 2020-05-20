@@ -35,7 +35,6 @@ describe('[IMAGE] - ', () => {
             .patch(`/image/${image._id}`)
             .field('description', 'new desc')
             .attach('image', './src/tests/fixtures/imgtest.png')
-            // .send({description: 'new desc'})
             .expect(200);
 
         const returnChecksum = file => {

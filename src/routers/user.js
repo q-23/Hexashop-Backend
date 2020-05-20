@@ -3,18 +3,20 @@ const router = new express.Router();
 
 const User = require('../models/user');
 const auth = require('../middleware/auth.js');
+const { sendWelcomeEmail } = require('../emails/account');
 
 const chalk = require('chalk');
 
 router.post('/user', async (req, res) => {
-    const user = new User(req.body);
+	const user = new User(req.body);
 	const token = await user.generateAuthToken();
 
 	try {
 		await user.save();
+		sendWelcomeEmail(user.email, user.name);
 		res.status(201).send({ token, user });
 	} catch(e) {
-		res.status(400).send(e);
+		res.status(400).send({message: e});
 	}
 });
 
@@ -44,6 +46,6 @@ router.patch('/user', auth, async (req,res) => {
 	} catch (e) {
 		res.status(400).send(e);
 	}
-})
+});
 
 module.exports = router;

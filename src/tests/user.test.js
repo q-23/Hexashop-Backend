@@ -30,6 +30,46 @@ describe('[USER] - ', () => {
         expect(userFound).toMatchObject(rest);
     });
 
+    test('Should not permit duplicate emails', async () => {
+        const userCredentials = {
+            name: 'Jan',
+            surname: 'Kowalski',
+            city: 'Łódź',
+            street: 'Piotrkowska',
+            house_number: '93',
+            email: 'jan@kowalski.pl',
+            password: 'asdf1234',
+            postal_code: '12-345'
+        };
+
+
+        await request(app)
+            .post('/user')
+            .send(userCredentials)
+            .expect(201);        
+
+        const err = await request(app)
+            .post('/user')
+            .send(userCredentials)
+            .expect(400);
+    });
+
+    test('Should not add users with incomplete data', async () => {
+        const userCredentials = {
+            name: 'Jan',
+            surname: 'Kowalski',
+            city: 'Łódź',
+            password: 'asdf1234',
+            postal_code: '12-345'
+        };
+
+        await request(app)
+            .post('/user')
+            .send(userCredentials)
+            .expect(400);
+
+    });
+
     test('Should not store passwords in plain text', async () => {
         const response = await request(app)
             .post('/user')
@@ -46,7 +86,6 @@ describe('[USER] - ', () => {
             .expect(201);
 
         const userAdded = await User.findById(response.body.user._id)
-
         expect(userAdded.password).not.toBe('asdf1234');
     });
 

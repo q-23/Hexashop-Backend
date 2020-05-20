@@ -75,7 +75,6 @@ router.get('/product/:id', async (req, res) => {
 
 		res.status(200).send(product)
 	} catch (e) {
-		console.log(chalk.red('Error: ') + e)
 		res.status(404).send()
 	}
 });
