@@ -3,6 +3,7 @@ const router = new express.Router();
 
 const Image = require('../models/image');
 
+const auth = require('../middleware/auth.js');
 const multer = require('multer');
 const chalk = require('chalk');
 
@@ -31,13 +32,12 @@ router.get('/image/:id', async (req, res) => {
         res.set('Content-Type', 'image/png');
         res.send(image.image);
     } catch (e) {
-        console.log(chalk.red('Error serving image: ') + e);
         res.send(500);
     }
 
 });
 
-router.patch('/image/:id', upload.single('image'), async (req, res) => {
+router.patch('/image/:id', auth('admin'), upload.single('image'), async (req, res) => {
     const { id } = req.params;
     const image = req.file.buffer;
     try {
@@ -51,11 +51,10 @@ router.patch('/image/:id', upload.single('image'), async (req, res) => {
         res.status(200).send(imageEdited);
     } catch (e) {
         res.status(500).send();
-        console.log(chalk.red('Error editing image: ') + e);
     }
 });
 
-router.delete('/image/:id', async (req, res) => {
+router.delete('/image/:id', auth('admin'), async (req, res) => {
     const { id } = req.params;
 
     try {

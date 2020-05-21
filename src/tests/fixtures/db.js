@@ -45,12 +45,16 @@ const setupProducts = async () => {
 	await Product.deleteMany();
 	await Image.deleteMany();
 	await Category.deleteMany();
+	await User.deleteMany();
+	await new User(userOne).save();
 	await Promise.all(productsArray.map(async el => await new Product(el).save()));
 	await Promise.all(categoryArray.map(async el => await new Category(el).save()));
 };
 
 const setupImages = async () => {
 	await Image.deleteMany();
+	await User.deleteMany();
+	await new User(userOne).save();
 	await Promise.all(imagesArray.map(async el => await new Image(el).save()))
 }
 

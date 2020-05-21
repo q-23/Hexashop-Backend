@@ -8,7 +8,7 @@ const auth = (type = 'user') => async (req, res, next) => {
 		const user = await User.findOne({ _id: decoded._id, 'tokens.token': token });
 
 		if (!user) {
-			throw new Error({ error: 'User not found.' })
+			throw new Error('User not found.')
 		}
 
 		if (type === 'admin' && !user.isAdmin) {

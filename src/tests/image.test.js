@@ -3,7 +3,22 @@ const Image = require('../models/image');
 const app = require('../app');
 const crypto = require('crypto');
 const fs = require('fs')
-const { setupImages } = require('./fixtures/db')
+const { setupImages, userOne } = require('./fixtures/db')
+
+let adminAuthToken = '';
+
+const adminUserLogin = () => {
+	return request(app)
+		.post('/user/login')
+		.send({email: userOne.email, password: userOne.password})
+};
+
+beforeEach(async (done) => {
+	await setupImages();
+    const adminRes = await adminUserLogin();
+	adminAuthToken = adminRes.body.user.tokens[0].token;
+	done()
+});
 
 beforeEach(setupImages);
 
@@ -22,7 +37,9 @@ describe('[IMAGE] - ', () => {
         const image = await Image.findOne({ description: 'Lorem ipsum' });
 
         await request(app)
-            .delete(`/image/${image._id}`);
+            .delete(`/image/${image._id}`)
+            .set('Authorization', `Bearer ${adminAuthToken}`)
+
 
         const imageFound = await Image.findById(image._id);
         expect(imageFound).toBeNull();
@@ -33,6 +50,7 @@ describe('[IMAGE] - ', () => {
 
         await request(app)
             .patch(`/image/${image._id}`)
+            .set('Authorization', `Bearer ${adminAuthToken}`)
             .field('description', 'new desc')
             .attach('image', './src/tests/fixtures/imgtest.png')
             .expect(200);

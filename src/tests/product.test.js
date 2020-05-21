@@ -4,31 +4,31 @@ const Image = require('../models/image');
 const Category = require('../models/category');
 const app = require('../app');
 
-const { setupProducts, productsArray, userOne } = require('./fixtures/db')
+const {setupProducts, productsArray, userOne} = require('./fixtures/db')
 const [productOne, productTwo] = productsArray;
 
-const adminUserLogin = request.agent(app);
-let adminUser = {};
 
-beforeAll(function(done){
-    adminUserLogin
-      .post('/user/login')
-      .send({ email: userOne.email, password: userOne.password })
-      .end(function(err, response){
-        expect(response.statusCode).toBe(200);
-        adminUser = response.body;
-        done();
-      });
-  });
+let adminAuthToken = '';
 
-beforeEach(setupProducts);
+const adminUserLogin = () => {
+	return request(app)
+		.post('/user/login')
+		.send({email: userOne.email, password: userOne.password})
+};
+
+beforeEach(async (done) => {
+	await setupProducts();
+	const adminRes = await adminUserLogin();
+	adminAuthToken = adminRes.body.user.tokens[0].token;
+	done()
+});
 
 // POST
 describe('[PRODUCT] - ', () => {
 	test('Should create product with name, description and price', async () => {
 		const response = await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.send({
 				name: 'Produkt pierwszy',
 				description: 'Opis produktu pierwszego',
@@ -49,7 +49,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should create product with category and create relation', async () => {
 		const response = await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.send({
 				name: 'Produkt pierwszy',
 				description: 'Opis produktu pierwszego',
@@ -71,7 +71,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should not create product without data', async () => {
 		await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.send({})
 			.expect(400)
 	});
@@ -79,7 +79,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should not create product with price equal or less than zero', async () => {
 		const response = await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.send({
 				name: 'Product',
 				description: 'Description',
@@ -93,7 +93,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should upload product images', async () => {
 		const response = await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.attach('images[0]', './src/tests/fixtures/imgtest.png')
 			.field('images[0][description]', 'description')
 			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
@@ -112,7 +112,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should not allow products with multiple main images', async () => {
 		await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.attach('images[0]', './src/tests/fixtures/imgtest.png')
 			.field('images[0][description]', 'description')
 			.field('images[0][main]', true)
@@ -128,7 +128,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should not allow products with images lacking main image', async () => {
 		await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.attach('images[0]', './src/tests/fixtures/imgtest.png')
 			.field('images[0][description]', 'description')
 			.field('images[0][main]', false)
@@ -144,7 +144,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should not upload not allowed file types files', async () => {
 		const response = await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.attach('images[0]', './src/tests/fixtures/note.txt')
 			.field('images[0][description]', 'description')
 			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
@@ -162,7 +162,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should assign product id to images', async () => {
 		const response = await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.attach('images[0]', './src/tests/fixtures/imgtest.png')
 			.field('images[0][description]', 'description')
 			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
@@ -173,7 +173,7 @@ describe('[PRODUCT] - ', () => {
 			.field('price', 23)
 			.expect(201);
 
-		const imagesSaved = await Image.find({ _id: [...response.body.images, response.body.image_thumbnail] });
+		const imagesSaved = await Image.find({_id: [...response.body.images, response.body.image_thumbnail]});
 		expect(imagesSaved.every(el => el.product_id)).toBeTruthy();
 	});
 
@@ -191,7 +191,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should use limiter', async () => {
 		const response = await request(app)
 			.get('/product')
-			.query({ limit: 10 })
+			.query({limit: 10})
 			.send()
 			.expect(200);
 
@@ -201,8 +201,8 @@ describe('[PRODUCT] - ', () => {
 	test('Should use pagination', async () => {
 		const response = await request(app)
 			.get('/product')
-			.query({ limit: 10 })
-			.query({ skip: 10 })
+			.query({limit: 10})
+			.query({skip: 10})
 			.send()
 			.expect(200);
 
@@ -228,7 +228,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should retrieve product images', async () => {
 		const response = await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.attach('images[0]', './src/tests/fixtures/imgtest.png')
 			.field('images[0][description]', 'description')
 			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
@@ -238,7 +238,7 @@ describe('[PRODUCT] - ', () => {
 			.field('description', 'Some desc')
 			.field('price', 23)
 			.expect(201)
-		const { _id } = response.body;
+		const {_id} = response.body;
 
 		const product = await request(app)
 			.get(`/product/${_id}`);
@@ -249,7 +249,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should create thumbnails from main pictures', async () => {
 		const product_saved = await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.attach('images[0]', './src/tests/fixtures/imgtest.png')
 			.field('images[0][description]', 'description')
 			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
@@ -267,7 +267,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should send only tumbnail when fetching bulk products', async () => {
 		await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.attach('images[0]', './src/tests/fixtures/imgtest.png')
 			.field('images[0][description]', 'description')
 			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
@@ -290,8 +290,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should sort products', async () => {
 		await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.send({
 				name: 'Produkt pierwszy',
 				description: 'Opis produktu pierwszego',
@@ -301,7 +300,7 @@ describe('[PRODUCT] - ', () => {
 
 		await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.send({
 				name: 'Produkt drugi',
 				description: 'Opis produktu drugiego',
@@ -311,35 +310,40 @@ describe('[PRODUCT] - ', () => {
 
 		const products = await request(app)
 			.get('/product')
-			.query({ sortBy: 'price:asc' })
+			.query({sortBy: 'price:asc'})
 			.expect(200);
 
-		const productsPrices = products.body.map(({ price }) => price);
+		const productsPrices = products.body.map(({price}) => price);
 		expect(productsPrices.sort((a, b) => a.price - b.price)).toEqual(productsPrices);
 	});
 
 	test("Should get product with it's categories", async () => {
-		const category = await Category.find({ category_name: 'Kategoria pierwsza' });
-		const product = await new Product({ name: 'prod', description: 'desc', price: 23, category: category[0]._id }).save();
+		const category = await Category.find({category_name: 'Kategoria pierwsza'});
+		const product = await new Product({name: 'prod', description: 'desc', price: 23, category: category[0]._id}).save();
 
 		const productGet = await request(app)
 			.get(`/product/${product._id}`)
 			.expect(200);
 
-		expect(productGet.body.category[0]).toMatchObject({ category_name: 'Kategoria pierwsza' })
+		expect(productGet.body.category[0]).toMatchObject({category_name: 'Kategoria pierwsza'})
 	});
 
 	test('Should get product with two categories', async () => {
-		const category = await Category.find({ category_name: 'Kategoria pierwsza' });
-		const categoryTwo = await Category.find({ category_name: 'Kategoria druga' });
-		const product = await new Product({ name: 'produkt', description: 'opis', price: 23, category: [category[0]._id, categoryTwo[0]._id] }).save();
+		const category = await Category.find({category_name: 'Kategoria pierwsza'});
+		const categoryTwo = await Category.find({category_name: 'Kategoria druga'});
+		const product = await new Product({
+			name: 'produkt',
+			description: 'opis',
+			price: 23,
+			category: [category[0]._id, categoryTwo[0]._id]
+		}).save();
 
 		const productGet = await request(app)
 			.get(`/product/${product._id}`)
 			.expect(200);
 
-		expect(productGet.body.category[0]).toMatchObject({ category_name: 'Kategoria pierwsza' })
-		expect(productGet.body.category[1]).toMatchObject({ category_name: 'Kategoria druga' })
+		expect(productGet.body.category[0]).toMatchObject({category_name: 'Kategoria pierwsza'})
+		expect(productGet.body.category[1]).toMatchObject({category_name: 'Kategoria druga'})
 	});
 
 	// DELETE
@@ -347,7 +351,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should delete product by ID', async () => {
 		await request(app)
 			.delete(`/product/${productTwo._id}`)
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.expect(200);
 
 		const product = Product.findById(productTwo._id);
@@ -356,10 +360,10 @@ describe('[PRODUCT] - ', () => {
 
 	test('Should delete multiple products', async () => {
 		const [productOne, productTwo, productThree] = productsArray;
-		const product_ids = [productOne, productTwo, productThree].map(({ _id }) => _id)
+		const product_ids = [productOne, productTwo, productThree].map(({_id}) => _id)
 		await request(app)
-			.delete('/product')			
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.delete('/product')
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.send(product_ids)
 			.expect(200);
 
@@ -373,7 +377,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should delete product images when deleting product', async () => {
 		const response = await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.attach('images[0]', './src/tests/fixtures/imgtest.png')
 			.field('images[0][description]', 'description')
 			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
@@ -384,11 +388,11 @@ describe('[PRODUCT] - ', () => {
 			.field('price', 23)
 			.expect(201);
 
-		const { _id, images, image_thumbnail } = response.body;
+		const {_id, images, image_thumbnail} = response.body;
 
 		await request(app)
 			.delete(`/product/${_id}`)
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.expect(200);
 
 		try {
@@ -404,7 +408,7 @@ describe('[PRODUCT] - ', () => {
 	test('Should update existing products', async () => {
 		const productOne = await request(app)
 			.post('/product')
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.send({
 				name: 'asd',
 				description: 'asd',
@@ -413,7 +417,7 @@ describe('[PRODUCT] - ', () => {
 
 		await request(app)
 			.patch(`/product/${productOne.body._id}`)
-			.set('Authorization', `Bearer ${adminUser.user.tokens[0].token}`)
+			.set('Authorization', `Bearer ${adminAuthToken}`)
 			.send({
 				name: 'Lorem ipsum'
 			})
