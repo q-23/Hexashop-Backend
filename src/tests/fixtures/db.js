@@ -43,10 +43,10 @@ const categoryArray = [
 const productsArray = populateProducts(15);
 
 const setupProducts = async () => {
-	await Product.deleteMany();
-	await Image.deleteMany();
-	await Category.deleteMany();
 	await User.deleteMany();
+	await Image.deleteMany();
+	await Product.deleteMany();
+	await Category.deleteMany();
 	await new User(userOne).save();
 	await Promise.all(productsArray.map(async el => await new Product(el).save()));
 	await Promise.all(categoryArray.map(async el => await new Category(el).save()));
@@ -92,6 +92,18 @@ const userTwo = {
 	}]
 };
 
+const ordersArray = productsArray.map((product_id, index) => {
+	return ({
+		ordered_products: {
+			_id: product_id,
+			count: index + 1
+		},
+		customer_id: index%2 === 0 ? userOneId : userTwoId,
+		completed: index%3 === 0
+	})
+});
+
+
 const setupUsers = async () => {
 	await User.deleteMany();
 	await new User(userOne).save();
@@ -103,7 +115,9 @@ const setupOrders = async () => {
 	await Order.deleteMany();
 	await Product.deleteMany();
 	await new User(userTwo).save();
+	await new User(userOne).save();
 	await Promise.all(productsArray.map(async el => await new Product(el).save()));
+	await Promise.all(ordersArray.map(async el => await new Order(el).save()));
 }
 
 module.exports = {

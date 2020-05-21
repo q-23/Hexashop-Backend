@@ -1,24 +1,16 @@
-const request = require('supertest');
-const Image = require('../models/image');
 const app = require('../app');
+
+const Image = require('../models/image');
+
+const request = require('supertest');
 const crypto = require('crypto');
-const fs = require('fs')
+const fs = require('fs');
+
 const { setupImages, userOne } = require('./fixtures/db')
 
-let adminAuthToken = '';
+const adminToken = userOne.tokens[0].token;
 
-const adminUserLogin = () => {
-	return request(app)
-		.post('/user/login')
-		.send({email: userOne.email, password: userOne.password})
-};
-
-beforeEach(async (done) => {
-	await setupImages();
-    const adminRes = await adminUserLogin();
-	adminAuthToken = adminRes.body.user.tokens[0].token;
-	done()
-});
+beforeEach(setupImages);
 
 describe('[IMAGE] - ', () => {
     test('Should get images', async () => {
@@ -36,7 +28,7 @@ describe('[IMAGE] - ', () => {
 
         await request(app)
             .delete(`/image/${image._id}`)
-            .set('Authorization', `Bearer ${adminAuthToken}`)
+            .set('Authorization', `Bearer ${adminToken}`)
 
 
         const imageFound = await Image.findById(image._id);
@@ -48,7 +40,7 @@ describe('[IMAGE] - ', () => {
 
         await request(app)
             .patch(`/image/${image._id}`)
-            .set('Authorization', `Bearer ${adminAuthToken}`)
+            .set('Authorization', `Bearer ${adminToken}`)
             .field('description', 'new desc')
             .attach('image', './src/tests/fixtures/imgtest.png')
             .expect(200);
