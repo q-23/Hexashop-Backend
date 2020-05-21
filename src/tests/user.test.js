@@ -1,7 +1,7 @@
 const request = require('supertest');
 const User = require('../models/user');
 const app = require('../app');
-const { setupUsers, userTwo, userTwoId, userOne } = require('./fixtures/db.js');
+const { setupUsers, userTwo } = require('./fixtures/db.js');
 
 beforeEach(setupUsers);
 
@@ -178,5 +178,5 @@ describe('[USER] - ', () => {
                 price: 23
             })
             .expect(403)
-    })
-})
+    });
+});

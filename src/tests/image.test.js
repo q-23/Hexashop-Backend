@@ -20,8 +20,6 @@ beforeEach(async (done) => {
 	done()
 });
 
-beforeEach(setupImages);
-
 describe('[IMAGE] - ', () => {
     test('Should get images', async () => {
         const main_img = await Image.findOne({ main: true });
