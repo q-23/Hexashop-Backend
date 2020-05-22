@@ -16,13 +16,13 @@ router.post('/user', async (req, res) => {
 		await user.save();
 		sendWelcomeEmail(user.email, user.name);
 		res.status(201).send({ token, user });
-	} catch(e) {
-		res.status(400).send({message: e});
+	} catch (e) {
+		res.status(400).send({ message: e });
 	}
 });
 
 router.post('/user/login', async (req, res) => {
-    try {
+	try {
 		const user = await User.findByCredentials(req.body.email, req.body.password);
 		const token = await user.generateAuthToken();
 		res.status(200).send({ token, user })
@@ -31,7 +31,7 @@ router.post('/user/login', async (req, res) => {
 	}
 });
 
-router.patch('/user', auth(), async (req,res) => {
+router.patch('/user', auth(), async (req, res) => {
 	const updates = Object.keys(req.body);
 	const notAllowedUpdatesArray = ['email'];
 	const isValidOperation = !updates.every(el => notAllowedUpdatesArray.includes(el));
@@ -53,9 +53,19 @@ router.get('/user/me', auth(), async (req, res) => {
 	try {
 		res.status(200).send(req.user);
 	} catch (e) {
-		console.log(e)
 		res.status(500).send()
 	}
-})
+});
+
+router.post('/user/logout', auth(), async (req, res) => {
+	try {
+		req.user.tokens = req.user.tokens.filter(token => token.token !== req.token);
+
+		await req.user.save();
+		res.status(200).send()
+	} catch (e) {
+		res.status(400).send()
+	}
+});
 
 module.exports = router;

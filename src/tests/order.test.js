@@ -155,5 +155,6 @@ describe('[ORDER] - ', () => {
             .set('Authorization', `Bearer ${adminUserToken}`)
             .expect(200);
 
+        expect(result.body.length).toBe(7);
     });
 });

@@ -182,4 +182,13 @@ describe('[USER] - ', () => {
             })
             .expect(403)
     });
+
+    test('Should be able to log out', async () => {
+        await request(app)
+            .post('/user/logout')
+            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
+            .expect(200);
+
+        expect(await (await User.findById(userTwo._id)).toObject().tokens.length).toBe(0);
+    })
 });
