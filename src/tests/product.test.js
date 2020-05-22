@@ -332,6 +332,20 @@ describe('[PRODUCT] - ', () => {
 		expect(productGet.body.category[1]).toMatchObject({ category_name: 'Kategoria druga' })
 	});
 
+	test('Should find products by name', async () => {
+		await new Product({
+			name: 'Klapki',
+			description: 'opis',
+			price: 23
+		}).save();
+
+		const product = await request(app)
+			.get('/product')
+			.query({ search: 'name:klapki' })
+			.expect(200)
+		expect(product.body[0].name).toBe('Klapki');
+	});
+
 	// DELETE
 
 	test('Should delete product by ID', async () => {

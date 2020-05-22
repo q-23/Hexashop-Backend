@@ -50,17 +50,27 @@ router.get('/product', async (req, res) => {
 	if (req.query.sortBy) {
 		const parts = req.query.sortBy.split(':');
 		sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
-	}
+	};
+
+	const search = {};
+
+	if (req.query.search) {
+		const searchTerms = req.query.search.split(':');
+		const searchKey = searchTerms[0];
+		const searchValue = searchTerms[1];
+
+		search[searchKey] = { $regex : new RegExp(searchValue, "i") };
+	};
 
 	try {
 		const products = await Product
-			.find()
+			.find(Object.keys(search).length ? search : {})
 			.select('name description price image_thumbnail')
 			.limit(Number(req.query.limit))
 			.skip(Number(req.query.skip))
 			.sort(sort);
 
-		res.send(products);
+			res.send(products);
 	} catch (e) {
 		res.status(404).send(e)
 	}
