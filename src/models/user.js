@@ -63,7 +63,20 @@ const userSchema = new mongoose.Schema({
 			type: String,
 			required: true
 		}
-	}]
+	}],
+	isVerified: {
+		type: Boolean,
+		default: false
+	},
+	verification_token: {
+		type: String,
+		validate(value) {
+			const token = jwt.verify(value, process.env.JWT_SECRET);
+			if (Date.now() >= token.exp * 1000) {
+				throw new Error('The verification token has expired.');
+			}
+		}
+	}
 }, {
 	timestamps: true
 });
@@ -102,6 +115,12 @@ userSchema.statics.findByCredentials = async (email, password) => {
 	}
 
 	return user
+};
+
+userSchema.methods.generateVerificationToken = async (id) => {
+	const verification_token = jwt.sign({ _id: id, type: 'verificationLinkToken' }, process.env.JWT_SECRET, { expiresIn: '1 day' });
+	await User.findByIdAndUpdate(id, { verification_token })
+	return verification_token;
 };
 
 userSchema.post('save', function (error, doc, next) {

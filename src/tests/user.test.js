@@ -6,6 +6,8 @@ const User = require('../models/user');
 
 const { setupUsers, userTwo } = require('./fixtures/db.js');
 
+const jwt = require('jsonwebtoken')
+
 beforeEach(setupUsers);
 
 describe('[USER] - ', () => {
@@ -190,5 +192,34 @@ describe('[USER] - ', () => {
             .expect(200);
 
         expect(await (await User.findById(userTwo._id)).toObject().tokens.length).toBe(0);
-    })
+    });
+
+    test('Should verify user after clicking verification link', async () => {
+        const adminUserResponse = await request(app)
+        .post('/user')
+        .send({
+            name: 'Jan',
+            surname: 'Kowalski',
+            city: 'Łódź',
+            street: 'Piotrkowska',
+            house_number: '93',
+            email: 'jan@kowalski.pl',
+            password: 'asdf1234',
+            postal_code: '12-345',
+            isAdmin: true,
+        }).expect(201);
+
+        const userId = adminUserResponse.body.user._id;
+
+        const userInDb = await User.findById(userId);
+        expect(userInDb.verification_token).toBeDefined();
+        expect(userInDb.isVerified).toBeFalsy();
+
+        await request(app)
+            .get('/user/verify/' + userInDb.verification_token)
+            .expect(200);
+
+        const userVerified = await User.findById(userId);
+        expect(userVerified.isVerified).toBeTruthy();
+    });
 });
