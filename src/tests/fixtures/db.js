@@ -71,6 +71,7 @@ const userOne = {
 	password: 'asdf1234',
 	postal_code: '12-345',
 	isAdmin: true,
+	isVerified: true,
 	tokens: [{
 		token: jwt.sign({ _id: userOneId }, process.env.JWT_SECRET)
 	}]
@@ -87,6 +88,7 @@ const userTwo = {
 	email: 'aleksander.kwiatkowski@gmail.com',
 	password: 'abcd1234',
 	postal_code: '80-827',
+	isVerified: true,
 	tokens: [{
 		token: jwt.sign({ _id: userTwoId }, process.env.JWT_SECRET)
 	}]

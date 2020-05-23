@@ -91,19 +91,13 @@ userSchema.methods.generateAuthToken = async function () {
 	const user = this;
 	const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
 
-	try {
-		await user.save();
-		user.tokens = user.tokens.concat({ token });
-	} catch (e) {
-
-	}
+	user.tokens = user.tokens.concat({ token });
 
 	return token;
 };
 
 userSchema.statics.findByCredentials = async (email, password) => {
 	const user = await User.findOne({ email });
-
 	if (!user) {
 		throw new Error('Unable to login.')
 	}
@@ -112,6 +106,10 @@ userSchema.statics.findByCredentials = async (email, password) => {
 
 	if (!isMatch) {
 		throw new Error('Unable to login.')
+	}
+
+	if (!user.isVerified) {
+		throw new Error('Please authenticate your e-mail.')
 	}
 
 	return user

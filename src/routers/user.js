@@ -8,7 +8,7 @@ const auth = require('../middleware/auth.js');
 
 const { sendWelcomeEmail } = require('../emails/account');
 
-router.post('/user', async (req, res) => {
+router.post('/user/new', async (req, res) => {
 	const user = new User(req.body);
 	const token = await user.generateAuthToken();
 
@@ -17,7 +17,7 @@ router.post('/user', async (req, res) => {
 		sendWelcomeEmail(user.email, user.name, user.generateVerificationToken(_id));
 		res.status(201).send({ token, user });
 	} catch (e) {
-		res.status(400).send({ message: e });
+		res.status(400).send({ message: e.toString() });
 	}
 });
 
@@ -28,7 +28,7 @@ router.post('/user/login', async (req, res) => {
 
 		res.status(200).send({ token, user })
 	} catch (e) {
-		res.status(400).send()
+		res.status(400).send({ error: e.toString() })
 	}
 });
 
@@ -46,7 +46,7 @@ router.patch('/user', auth(), async (req, res) => {
 		await user.save();
 		res.send(user);
 	} catch (e) {
-		res.status(400).send(e);
+		res.status(400).send({ error: e.toString() });
 	}
 });
 
@@ -54,7 +54,7 @@ router.get('/user/me', auth(), async (req, res) => {
 	try {
 		res.status(200).send(req.user);
 	} catch (e) {
-		res.status(500).send()
+		res.status(500).send({ error: e.toString() })
 	}
 });
 
@@ -65,7 +65,7 @@ router.post('/user/logout', auth(), async (req, res) => {
 		await req.user.save();
 		res.status(200).send()
 	} catch (e) {
-		res.status(400).send()
+		res.status(400).send({ error: e.toString() })
 	}
 });
 
@@ -75,8 +75,12 @@ router.get('/user/verify/:token', async (req, res) => {
 		return res.status(400).send({error: 'The link has expired.'})
 	}
 	try {
-		await User.findByIdAndUpdate(token._id, { isVerified: true });
-		res.status(200).send()
+		const user = await User.findById(token._id);
+		if (user.isVerified) {
+			return res.status(403).send({ error: 'Your account is already verified.' })
+		}
+		await User.findByIdAndUpdate(token._id, { isVerified: true })
+		res.status(200).send({ success: 'You have successfully verified your e-mail address.' })
 	} catch (e) {
 		res.status(400).send()
 	}

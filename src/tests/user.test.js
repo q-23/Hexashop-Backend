@@ -25,7 +25,7 @@ describe('[USER] - ', () => {
 
 
         const response = await request(app)
-            .post('/user')
+            .post('/user/new')
             .send(userCredentials)
             .expect(201);
 
@@ -49,12 +49,12 @@ describe('[USER] - ', () => {
 
 
         await request(app)
-            .post('/user')
+            .post('/user/new')
             .send(userCredentials)
             .expect(201);
 
         await request(app)
-            .post('/user')
+            .post('/user/new')
             .send(userCredentials)
             .expect(400);
     });
@@ -69,7 +69,7 @@ describe('[USER] - ', () => {
         };
 
         await request(app)
-            .post('/user')
+            .post('/user/new')
             .send(userCredentials)
             .expect(400);
 
@@ -77,7 +77,7 @@ describe('[USER] - ', () => {
 
     test('Should not store passwords in plain text', async () => {
         const response = await request(app)
-            .post('/user')
+            .post('/user/new')
             .send({
                 name: 'Jan',
                 surname: 'Kowalski',
@@ -151,7 +151,7 @@ describe('[USER] - ', () => {
 
     test('Should add admin users', async () => {
         const adminUserResponse = await request(app)
-            .post('/user')
+            .post('/user/new')
             .send({
                 name: 'Jan',
                 surname: 'Kowalski',
@@ -196,18 +196,18 @@ describe('[USER] - ', () => {
 
     test('Should verify user after clicking verification link', async () => {
         const adminUserResponse = await request(app)
-        .post('/user')
-        .send({
-            name: 'Jan',
-            surname: 'Kowalski',
-            city: 'Łódź',
-            street: 'Piotrkowska',
-            house_number: '93',
-            email: 'jan@kowalski.pl',
-            password: 'asdf1234',
-            postal_code: '12-345',
-            isAdmin: true,
-        }).expect(201);
+            .post('/user/new')
+            .send({
+                name: 'Jan',
+                surname: 'Kowalski',
+                city: 'Łódź',
+                street: 'Piotrkowska',
+                house_number: '93',
+                email: 'jan@kowalski.pl',
+                password: 'asdf1234',
+                postal_code: '12-345',
+                isAdmin: true,
+            }).expect(201);
 
         const userId = adminUserResponse.body.user._id;
 
@@ -221,5 +221,112 @@ describe('[USER] - ', () => {
 
         const userVerified = await User.findById(userId);
         expect(userVerified.isVerified).toBeTruthy();
+    });
+
+    test('Should not verify user twice', async () => {
+        const adminUserResponse = await request(app)
+            .post('/user/new')
+            .send({
+                name: 'Jan',
+                surname: 'Kowalski',
+                city: 'Łódź',
+                street: 'Piotrkowska',
+                house_number: '93',
+                email: 'jan@kowalski.pl',
+                password: 'asdf1234',
+                postal_code: '12-345',
+                isAdmin: true,
+            }).expect(201);
+
+        const userId = adminUserResponse.body.user._id;
+
+        const userInDb = await User.findById(userId);
+        expect(userInDb.verification_token).toBeDefined();
+        expect(userInDb.isVerified).toBeFalsy();
+
+        await request(app)
+            .get('/user/verify/' + userInDb.verification_token)
+            .expect(200);
+
+        const userVerified = await User.findById(userId);
+        expect(userVerified.isVerified).toBeTruthy();
+
+        await request(app)
+            .get('/user/verify/' + userInDb.verification_token)
+            .expect(403);
+
+        const userVerifiedSecondTime = await User.findById(userId);
+        expect(userVerifiedSecondTime.isVerified).toBeTruthy();
+    });
+
+    test('Should not log in unverified user', async () => {
+        const userInfo = {
+            name: 'Jan',
+            surname: 'Kowalski',
+            city: 'Łódź',
+            street: 'Piotrkowska',
+            house_number: '93',
+            email: 'testacc@testacc.pl',
+            password: 'asdf1234',
+            postal_code: '12-345',
+            isAdmin: true,
+        };
+
+        await request(app)
+            .post('/user/new')
+            .send(userInfo)
+            .expect(201);
+
+        const { email, password } = userInfo;
+
+        const res = await request(app)
+            .post('/user/login')
+            .send({
+                email, password
+            })
+            .expect(400);
+
+        expect(JSON.parse(res.error.text).error).toBe('Error: Please authenticate your e-mail.')
+    });
+
+    test('Should log in verified user', async () => {
+        const userInfo = {
+            name: 'Jan',
+            surname: 'Kowalski',
+            city: 'Łódź',
+            street: 'Piotrkowska',
+            house_number: '93',
+            email: 'testacc@testaxx.pl',
+            password: 'asdf1234',
+            postal_code: '12-345',
+            isAdmin: true,
+        };
+
+        const res = await request(app)
+            .post('/user/new')
+            .send(userInfo)
+            .expect(201);
+
+        const { email, password } = userInfo;
+
+        await request(app)
+            .post('/user/login')
+            .send({
+                email, password
+            })
+            .expect(400);
+
+        const userInDb = await User.findById(res.body.user._id);
+
+        await request(app)
+            .get('/user/verify/' + userInDb.verification_token)
+            .expect(200);
+
+        await request(app)
+            .post('/user/login')
+            .send({
+                email, password
+            })
+            .expect(200);
     });
 });

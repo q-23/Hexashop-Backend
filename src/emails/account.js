@@ -2,7 +2,9 @@ const sgMail = require('@sendgrid/mail');
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const sendWelcomeEmail = (email, name, authLink) => {
+const sendWelcomeEmail = async (email, name, linkPromise) => {
+	const authLink = await linkPromise;
+
 	sgMail.send({
 		to: email,
 		from: 'awers3@gmail.com',
