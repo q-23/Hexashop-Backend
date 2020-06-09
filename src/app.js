@@ -1,4 +1,6 @@
 const express = require('express');
+const cors = require('cors');
+
 require('./db/mongoose');
 
 const categoryRouter = require('./routers/category');
@@ -9,15 +11,10 @@ const orderRouter = require('./routers/order');
 const userRouter = require('./routers/user');
 
 const app = express();
-const path = require('path');
 
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json());
-
-// app.set('view engine', 'ejs');
-// app.engine('html', require('ejs').renderFile);
-
-// app.use(express.static(path.join(__dirname, './views')));
+app.use(cors())
 
 app.use(categoryRouter);
 app.use(purchaseRouter);

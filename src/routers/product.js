@@ -8,7 +8,6 @@ const auth = require('../middleware/auth.js');
 const multer = require('multer');
 const chalk = require('chalk');
 
-
 const upload = multer({
 	limits: {
 		fileSize: 1000000
@@ -46,7 +45,6 @@ router.post('/product', auth('admin'), upload.any(), async (req, res) => {
 
 router.get('/product', async (req, res) => {
 	const sort = {};
-
 	if (req.query.sortBy) {
 		const parts = req.query.sortBy.split(':');
 		sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
@@ -82,7 +80,8 @@ router.get('/product/:id', async (req, res) => {
 		const product = await Product
 			.findOne({ _id })
 			.populate('category')
-			.populate('images');
+			.lean()
+			.populate('images', 'description main');
 
 		res.status(200).send(product)
 	} catch (e) {

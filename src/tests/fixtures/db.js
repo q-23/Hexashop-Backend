@@ -8,7 +8,7 @@ const Order = require('../../models/order');
 const Image = require('../../models/image');
 const User = require('../../models/user');
 
-const populateProducts = count => {
+const populateProducts = (count, images) => {
 	const returnArray = [];
 
 	for (let i = 0; i < count; i++) {
@@ -16,6 +16,7 @@ const populateProducts = count => {
 			_id: new mongoose.Types.ObjectId(),
 			description: `product description ${i}`,
 			name: `Product name ${i}`,
+			images: images,
 			price: 10 + i
 		})
 	}
@@ -36,8 +37,8 @@ const imagesArray = [
 ]
 
 const categoryArray = [
-	{category_name: 'Kategoria pierwsza'},
-	{category_name: 'Kategoria druga'}
+	{category_name: 'Kategoria pierwsza', category_path: '/path'},
+	{category_name: 'Kategoria druga', category_path: '/path2'}
 ]
 
 const productsArray = populateProducts(15);
@@ -48,7 +49,9 @@ const setupProducts = async () => {
 	await Product.deleteMany();
 	await Category.deleteMany();
 	await new User(userOne).save();
-	await Promise.all(productsArray.map(async el => await new Product(el).save()));
+	const images = await Promise.all(imagesArray.map(async el => await new Image(el).save()))
+	const productsArrayWithImages = populateProducts(15, images);
+	await Promise.all(productsArrayWithImages.map(async el => await new Product(el).save()));
 	await Promise.all(categoryArray.map(async el => await new Category(el).save()));
 };
 

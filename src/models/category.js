@@ -4,9 +4,14 @@ const Product = require('./product');
 const categorySchema = new mongoose.Schema({
 	category_name: {
 		type: String,
-        trim: true,
-        required: true
-    }
+		trim: true,
+		required: true
+	},
+	category_path: {
+		type: String,
+		trim: true,
+		required: true
+	}
 }, {
 	timestamps: true
 });

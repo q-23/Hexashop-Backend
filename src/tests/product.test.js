@@ -176,6 +176,14 @@ describe('[PRODUCT] - ', () => {
 		expect(response.body).toHaveLength(15)
 	});
 
+	test('Should send links to thumbnails', async () => {
+		const response = await request(app)
+			.get('/product')
+			.send()
+			.expect(200)
+		expect(response.body).toHaveLength(15)
+	});
+
 	test('Should use limiter', async () => {
 		const response = await request(app)
 			.get('/product')
@@ -213,7 +221,7 @@ describe('[PRODUCT] - ', () => {
 			.expect(404);
 	});
 
-	test('Should retrieve product images', async () => {
+	test("Should ommit buffers when retrieving images", async () => {
 		const response = await request(app)
 			.post('/product')
 			.set('Authorization', `Bearer ${userOne.tokens[0].token}`)
@@ -231,7 +239,10 @@ describe('[PRODUCT] - ', () => {
 		const product = await request(app)
 			.get(`/product/${_id}`);
 
-		product.body.images.forEach(image => expect(image).toHaveProperty('image'))
+		product.body.images.forEach(image => {
+			expect(image).toHaveProperty('_id')
+			expect(image).not.toHaveProperty('image')
+		})
 	});
 
 	test('Should create thumbnails from main pictures', async () => {
@@ -349,8 +360,9 @@ describe('[PRODUCT] - ', () => {
 	// DELETE
 
 	test('Should delete product by ID', async () => {
+		const productFound = await Product.findOne({ name: 'Product name 1'})
 		await request(app)
-			.delete(`/product/${productTwo._id}`)
+			.delete(`/product/${productFound._id}`)
 			.set('Authorization', `Bearer ${userOne.tokens[0].token}`).expect(200);
 
 		const product = Product.findById(productTwo._id);
@@ -421,5 +433,5 @@ describe('[PRODUCT] - ', () => {
 		const productUpdated = await Product.findById(productOne.body._id);
 
 		expect(productUpdated.name).toBe('Lorem ipsum');
-	})
+	});
 });

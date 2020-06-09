@@ -11,12 +11,22 @@ describe('[CATEGORY] - ', () => {
         const response = await request(app)
             .post('/category')
             .send({
-                category_name: 'Kategoria pierwsza'
+                category_name: 'Kategoria pierwsza',
+                category_path: '/path'
             })
             .expect(201)
 
         const categoryFound = await Category.findById(response.body._id)
         expect(categoryFound).toBeTruthy()
+    });
+
+    test('Should not add category without category path', async () => {
+        await request(app)
+          .post('/category')
+          .send({
+              category_name: 'Kategoria pierwsza'
+          })
+          .expect(400)
     });
 
     test("Should get category and it's products", async () => {
@@ -60,7 +70,9 @@ describe('[CATEGORY] - ', () => {
 
         const categoryUpdated = await request(app)
             .patch(`/category/${category[0]._id}`)
-            .send({ category_name: 'Kategoria trzecia' })
+            .send({ category_name: 'Kategoria trzecia',
+                category_path: '/path'
+            })
             .expect(201);
 
         expect(categoryUpdated.body.category_name).toBe('Kategoria trzecia');
