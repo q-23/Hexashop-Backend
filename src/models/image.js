@@ -16,11 +16,20 @@ const imageSchema = new mongoose.Schema({
 	thumbnail: {
 		type: Boolean
 	},
+	link: {
+		type: String
+	},
 	product_id: {
 		type: mongoose.Schema.Types.ObjectId
 	}
 }, {
 	timestamps: true
+});
+
+imageSchema.pre('save', async function (next) {
+	const image = this;
+	image.link = `${process.env.HOST_URL}/image/${image._id}`
+	next();
 });
 
 const Image = mongoose.model('Image', imageSchema);

@@ -80,9 +80,10 @@ router.get('/product/:id', async (req, res) => {
 		const product = await Product
 			.findOne({ _id })
 			.populate('category')
-			.populate('brand_name', 'brand_name')
+			.populate('brand', 'brand_name')
+			.populate('image_thumbnail', 'link')
 			.lean()
-			.populate('images', 'description main');
+			.populate('images', 'description link main');
 
 		res.status(200).send(product)
 	} catch (e) {

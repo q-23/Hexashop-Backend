@@ -12,7 +12,6 @@ const [productOne, productTwo] = productsArray;
 
 beforeEach(setupProducts);
 
-// POST
 describe('[PRODUCT] - ', () => {
 	test('Should create product with name, description and price', async () => {
 		const response = await request(app)
@@ -98,6 +97,27 @@ describe('[PRODUCT] - ', () => {
 		expect(product.images.length).toBe(2)
 	});
 
+	test('Should provide image links', async () => {
+		const response = await request(app)
+			.post('/product')
+			.set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+			.attach('images[0]', './src/tests/fixtures/imgtest.png')
+			.field('images[0][description]', 'description')
+			.attach('images[1]', './src/tests/fixtures/imgtest2.jpg')
+			.field('images[1][description]', 'description')
+			.field('images[1][main]', true)
+			.field('name', 'Product')
+			.field('description', 'Some desc')
+			.field('price', 23)
+			.expect(201)
+
+		const productResponse = await request(app)
+			.get(`/product/${response.body._id}`)
+
+		expect(productResponse.body.image_thumbnail.link).toBe(`${process.env.HOST_URL}/image/${productResponse.body.image_thumbnail._id}`);
+		productResponse.body.images.forEach(image => expect(image.link).toBe(`${process.env.HOST_URL}/image/${image._id}`))
+	});
+
 	test('Should not allow products with multiple main images', async () => {
 		await request(app)
 			.post('/product')
@@ -166,7 +186,6 @@ describe('[PRODUCT] - ', () => {
 		expect(imagesSaved.every(el => el.product_id)).toBeTruthy();
 	});
 
-	// GET
 
 	test('Should get multiple products', async () => {
 		const response = await request(app)
@@ -358,7 +377,6 @@ describe('[PRODUCT] - ', () => {
 		expect(product.body[0].name).toBe('Klapki');
 	});
 
-	// DELETE
 
 	test('Should delete product by ID', async () => {
 		const productFound = await Product.findOne({ name: 'Product name 1'})
@@ -391,12 +409,12 @@ describe('[PRODUCT] - ', () => {
 		const product = await request(app)
 			.post('/product')
 			.set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-			.send({  name: 'Prod', description: 'desc', price: 23, brand_name: brand._id });
+			.send({  name: 'Prod', description: 'desc', price: 23, brand: brand._id });
 
 		const productResponse = await request(app)
 			.get(`/product/${product.body._id}`)
 
-		expect(productResponse.body.brand_name).toMatchObject({ brand_name: 'Marka pierwsza' })
+		expect(productResponse.body.brand).toMatchObject({ brand_name: 'Marka pierwsza' })
 	});
 
 	test('Should delete product images when deleting product', async () => {
@@ -426,8 +444,6 @@ describe('[PRODUCT] - ', () => {
 			console.log(e)
 		}
 	});
-
-	// PATCH
 
 	test('Should update existing products', async () => {
 		const productOne = await request(app)

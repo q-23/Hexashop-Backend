@@ -23,13 +23,14 @@ const productSchema = new mongoose.Schema({
 		ref: 'Image'
 	}],
 	image_thumbnail: {
-		type: mongoose.Schema.Types.ObjectId
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Image'
 	},
 	category: [{
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Category'
 	}],
-	brand_name: {
+	brand: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Brand'
 	}

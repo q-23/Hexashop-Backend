@@ -21,7 +21,7 @@ router.get('/brand/:id', async (req, res) => {
 
     try {
         const brand = await Brand.findById(id);
-        const products = await Product.find({ brand_name: id });
+        const products = await Product.find({ brand: id });
 
         const { brand_name } = brand;
 

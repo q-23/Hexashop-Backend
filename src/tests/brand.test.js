@@ -37,8 +37,8 @@ describe('[BRAND] - ', () => {
         const brand = await Brand.findOne({ brand_name: 'Marka pierwsza' });
         const brandTwo = await Brand.findOne({ brand_name: 'Marka druga' });
 
-        await new Product({ name: 'a', description: 'b', price: 23, brand_name: brand._id }).save();
-        await new Product({ name: 'c', description: 'd', price: 23, brand_name: brandTwo._id }).save();
+        await new Product({ name: 'a', description: 'b', price: 23, brand: brand._id }).save();
+        await new Product({ name: 'c', description: 'd', price: 23, brand: brandTwo._id }).save();
 
         const categoryResponse = await request(app)
             .get(`/brand/${brand._id}`)
