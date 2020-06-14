@@ -28,7 +28,11 @@ const productSchema = new mongoose.Schema({
 	category: [{
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Category'
-	}]
+	}],
+	brand_name: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Brand'
+	}
 }, {
 	timestamps: true
 });

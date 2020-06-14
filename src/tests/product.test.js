@@ -4,6 +4,7 @@ const request = require('supertest');
 
 const Category = require('../models/category');
 const Product = require('../models/product');
+const Brand = require('../models/brand');
 const Image = require('../models/image');
 
 const { setupProducts, productsArray, userOne } = require('./fixtures/db')
@@ -382,6 +383,20 @@ describe('[PRODUCT] - ', () => {
 		} catch (e) {
 			console.log(e)
 		}
+	});
+
+	test('Should send brand name', async () => {
+		const brand = await Brand.findOne({ brand_name: 'Marka pierwsza' });
+
+		const product = await request(app)
+			.post('/product')
+			.set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+			.send({  name: 'Prod', description: 'desc', price: 23, brand_name: brand._id });
+
+		const productResponse = await request(app)
+			.get(`/product/${product.body._id}`)
+
+		expect(productResponse.body.brand_name).toMatchObject({ brand_name: 'Marka pierwsza' })
 	});
 
 	test('Should delete product images when deleting product', async () => {

@@ -80,6 +80,7 @@ router.get('/product/:id', async (req, res) => {
 		const product = await Product
 			.findOne({ _id })
 			.populate('category')
+			.populate('brand_name', 'brand_name')
 			.lean()
 			.populate('images', 'description main');
 

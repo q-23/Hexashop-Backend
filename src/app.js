@@ -8,6 +8,7 @@ const purchaseRouter = require('./routers/purchase');
 const productRouter = require('./routers/product');
 const imageRouter = require('./routers/image');
 const orderRouter = require('./routers/order');
+const brandRouter = require('./routers/brand');
 const userRouter = require('./routers/user');
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(cors())
 app.use(categoryRouter);
 app.use(purchaseRouter);
 app.use(productRouter);
+app.use(brandRouter);
 app.use(imageRouter);
 app.use(orderRouter);
 app.use(userRouter);

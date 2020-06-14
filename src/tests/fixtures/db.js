@@ -4,6 +4,7 @@ const fs = require('fs');
 
 const Category = require('../../models/category');
 const Product = require('../../models/product');
+const Brand = require('../../models/brand');
 const Order = require('../../models/order');
 const Image = require('../../models/image');
 const User = require('../../models/user');
@@ -43,8 +44,14 @@ const categoryArray = [
 
 const productsArray = populateProducts(15);
 
+const brandsArray = [
+	{brand_name: 'Marka pierwsza'},
+	{ brand_name: 'Marka druga', brand_path: 'lorem' }
+]
+
 const setupProducts = async () => {
 	await User.deleteMany();
+	await Brand.deleteMany();
 	await Image.deleteMany();
 	await Product.deleteMany();
 	await Category.deleteMany();
@@ -52,6 +59,7 @@ const setupProducts = async () => {
 	const images = await Promise.all(imagesArray.map(async el => await new Image(el).save()))
 	const productsArrayWithImages = populateProducts(15, images);
 	await Promise.all(productsArrayWithImages.map(async el => await new Product(el).save()));
+	await Promise.all(brandsArray.map(async el => await new Brand(el).save()));
 	await Promise.all(categoryArray.map(async el => await new Category(el).save()));
 };
 

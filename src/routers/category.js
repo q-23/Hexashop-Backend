@@ -28,7 +28,7 @@ router.get('/category/:id', async (req, res) => {
 
         if (!category) {
             res.status(404).send();
-        };
+        }
 
         res.send({
             category_name,
