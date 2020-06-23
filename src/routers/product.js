@@ -64,6 +64,7 @@ router.get('/product', async (req, res) => {
 		const products = await Product
 			.find(Object.keys(search).length ? search : {})
 			.select('name description price image_thumbnail')
+			.populate('image_thumbnail', 'link')
 			.limit(Number(req.query.limit))
 			.skip(Number(req.query.skip))
 			.sort(sort);
