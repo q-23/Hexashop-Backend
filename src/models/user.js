@@ -83,7 +83,9 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre('save', async function (next) {
 	const user = this;
-	user.password = await bcrypt.hash(user.password, 8);
+	if(!user.password.startsWith('$2b$08$') && user.password.length !== 53) {
+		user.password = await bcrypt.hash(user.password, 8);
+	}
 	next();
 });
 
@@ -91,7 +93,13 @@ userSchema.methods.generateAuthToken = async function () {
 	const user = this;
 	const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
 
-	user.tokens = user.tokens.concat({ token });
+	try {
+		user.tokens = user.tokens.concat({ token });
+		await user.save();
+	} catch (e) {
+		console.log(e)
+	}
+
 	return token;
 };
 

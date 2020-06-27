@@ -140,12 +140,14 @@ describe('[USER] - ', () => {
                 password: userTwo.password
             })
             .expect(200);
+
         const accountResponse = await request(app)
             .get('/user/me')
             .set('Authorization', `Bearer ${loginResponse.body.user.tokens[0].token}`)
             .expect(200)
 
-        const { password, _id, ...userData } = userTwo;
+        const { password, _id, tokens, ...userData } = userTwo;
+
         expect(accountResponse.body).toMatchObject(userData);
     });
 

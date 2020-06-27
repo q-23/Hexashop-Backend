@@ -14,7 +14,7 @@ router.post('/user/new', async (req, res) => {
 
 	try {
 		const { _id } = await user.save();
-		sendWelcomeEmail(user.email, user.name, user.generateVerificationToken(_id));
+		await sendWelcomeEmail(user.email, user.name, user.generateVerificationToken(_id));
 		res.status(201).send({ token, user });
 	} catch (e) {
 		res.status(400).send({ message: e.toString() });
@@ -26,7 +26,7 @@ router.post('/user/login', async (req, res) => {
 		const user = await User.findByCredentials(req.body.email, req.body.password);
 		const token = await user.generateAuthToken();
 
-		res.status(200).send({ token })
+		res.status(200).send({ token, user })
 	} catch (e) {
 		res.status(400).send({ error: e.toString() })
 	}
