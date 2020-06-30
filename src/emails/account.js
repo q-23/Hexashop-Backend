@@ -9,7 +9,7 @@ const sendWelcomeEmail = async (email, name, linkPromise) => {
 		to: email,
 		from: 'awers3@gmail.com',
 		subject: 'Thanks for joining in!',
-		text: `Welcome in our shop, ${name}. To complete registration, please enter the following link: ${process.env.HOST_URL}/user/verify/${authLink}`
+		text: `Welcome in our shop, ${name}. To complete registration, please enter the following link: ${process.env.HOST_URL}/verify_email/${authLink}`
 	});
 };
 

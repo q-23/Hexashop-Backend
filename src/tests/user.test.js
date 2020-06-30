@@ -6,8 +6,6 @@ const User = require('../models/user');
 
 const { setupUsers, userTwo } = require('./fixtures/db.js');
 
-const jwt = require('jsonwebtoken')
-
 beforeEach(setupUsers);
 
 describe('[USER] - ', () => {
@@ -169,22 +167,55 @@ describe('[USER] - ', () => {
         expect(adminUserResponse.body.user.isAdmin).toBeTruthy()
     });
 
-    test('Should not let non administrative users add new products', async () => {
-        const { email, password } = userTwo;
-        const response = await request(app)
-            .post('/user/login')
-            .send({ email, password })
-            .expect(200);
+    test('Should not allow hashed passwords input', async () => {
+      const userResponse = await request(app)
+        .post('/user/new')
+        .send({
+          name: 'Jan',
+          surname: 'Kowalski',
+          city: 'Łódź',
+          street: 'Piotrkowska',
+          house_number: '93',
+          email: 'jan@kowalski.pl',
+          password: '$2b$08$A0rjzCtjYMcQ6vd69j2pNeY/c5owkxefgM/teftsrwViJYqkkQrRu',
+          postal_code: '12-345'
+        }).expect(400);
+    });
 
-        await request(app)
-            .post('/product')
-            .set('Authorization', `Bearer ${response.body.user.tokens[0].token}`)
-            .send({
-                name: 'asd',
-                description: 'asdg',
-                price: 23
-            })
-            .expect(403)
+  test('Should not send password when retrieving user data', async () => {
+    const userResponse = await request(app)
+      .get('/user/me')
+      .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
+      .expect(200)
+
+    expect(userResponse.body.password).toBeUndefined()
+  });
+
+  test('Should not send tokens when retrieving user data', async () => {
+    const userResponse = await request(app)
+      .get('/user/me')
+      .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
+      .expect(200)
+
+    expect(userResponse.body.tokens).toBeUndefined()
+  });
+
+  test('Should not let non administrative users add new products', async () => {
+      const { email, password } = userTwo;
+      const response = await request(app)
+          .post('/user/login')
+          .send({ email, password })
+          .expect(200);
+
+      await request(app)
+          .post('/product')
+          .set('Authorization', `Bearer ${response.body.user.tokens[0].token}`)
+          .send({
+              name: 'asd',
+              description: 'asdg',
+              price: 23
+          })
+          .expect(403)
     });
 
     test('Should be able to log out', async () => {

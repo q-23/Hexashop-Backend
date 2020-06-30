@@ -52,7 +52,10 @@ router.patch('/user', auth(), async (req, res) => {
 
 router.get('/user/me', auth(), async (req, res) => {
 	try {
-		res.status(200).send(req.user);
+		const userData = req.user.toObject();
+		delete userData.password;
+		delete userData.tokens;
+		res.status(200).send(userData);
 	} catch (e) {
 		res.status(500).send({ error: e.toString() })
 	}
@@ -70,19 +73,17 @@ router.post('/user/logout', auth(), async (req, res) => {
 });
 
 router.get('/user/verify/:token', async (req, res) => {
-	const token = jwt.verify(req.params.token, process.env.JWT_SECRET)
-	if (Date.now() >= token.exp * 1000) {
-		return res.status(400).send({error: 'The link has expired.'})
-	}
 	try {
+		const token = jwt.verify(req.params.token, process.env.JWT_SECRET)
 		const user = await User.findById(token._id);
 		if (user.isVerified) {
-			return res.status(403).send({ error: 'Your account is already verified.' })
+			return res.status(403).send({ error: 'Your account is already verified. Go to login page to sign in to your account.'});
 		}
 		await User.findByIdAndUpdate(token._id, { isVerified: true })
-		res.status(200).send({ success: 'You have successfully verified your e-mail address.' })
+		res.status(200).send({ success: 'Registration successful! Please check your e-mail and click the provided link to complete your registration. You can close this page.' })
 	} catch (e) {
-		res.status(400).send()
+		console.log(e)
+		res.status(400).send({error: 'Your link is malformed. Please enter a valid verification link and try again.'})
 	}
 });
 

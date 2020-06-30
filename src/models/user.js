@@ -83,7 +83,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre('save', async function (next) {
 	const user = this;
-	if(!user.password.startsWith('$2b$08$') && user.password.length !== 53) {
+	if(!user.password.startsWith('$2b$08$') && user.password.length !== 60) {
 		user.password = await bcrypt.hash(user.password, 8);
 	}
 	next();
