@@ -193,7 +193,7 @@ describe('[PRODUCT] - ', () => {
 			.send()
 			.expect(200)
 
-		expect(response.body).toHaveLength(15)
+		expect(response.body.products).toHaveLength(15)
 	});
 
 	test('Should send links to thumbnails', async () => {
@@ -201,7 +201,7 @@ describe('[PRODUCT] - ', () => {
 			.get('/product')
 			.send()
 			.expect(200)
-		expect(response.body).toHaveLength(15)
+		expect(response.body.products).toHaveLength(15)
 	});
 
 	test('Should use limiter', async () => {
@@ -211,7 +211,7 @@ describe('[PRODUCT] - ', () => {
 			.send()
 			.expect(200);
 
-		expect(response.body).toHaveLength(10)
+		expect(response.body.products).toHaveLength(10)
 	});
 
 	test('Should use pagination', async () => {
@@ -222,7 +222,15 @@ describe('[PRODUCT] - ', () => {
 			.send()
 			.expect(200);
 
-		expect(response.body).toHaveLength(5)
+		expect(response.body.products).toHaveLength(5)
+	});
+
+	test('Should send product count', async () => {
+		const response = await request(app)
+			.get('/product')
+			.expect(200);
+
+		expect(response.body.count).toBe(15)
 	});
 
 	test('Should find product by id', async () => {
@@ -231,7 +239,7 @@ describe('[PRODUCT] - ', () => {
 			.send()
 			.expect(200);
 
-		expect(response.body).not.toBeNull();
+		expect(response.body.products).not.toBeNull();
 	});
 
 	test('Should not find not existing product', async () => {
@@ -302,8 +310,8 @@ describe('[PRODUCT] - ', () => {
 			.send()
 			.expect(200)
 
-		expect(products.body.some(el => 'image_thumbnail' in el)).toBeTruthy();
-		expect(products.body.every(el => !('images' in el))).toBeTruthy();
+		expect(products.body.products.some(el => 'image_thumbnail' in el)).toBeTruthy();
+		expect(products.body.products.every(el => !('images' in el))).toBeTruthy();
 	});
 
 	test('Should sort products', async () => {
@@ -330,7 +338,7 @@ describe('[PRODUCT] - ', () => {
 			.query({ sortBy: 'price:asc' })
 			.expect(200);
 
-		const productsPrices = products.body.map(({ price }) => price);
+		const productsPrices = products.body.products.map(({ price }) => price);
 		expect(productsPrices.sort((a, b) => a.price - b.price)).toEqual(productsPrices);
 	});
 
@@ -374,7 +382,8 @@ describe('[PRODUCT] - ', () => {
 			.get('/product')
 			.query({ search: 'name:klapki' })
 			.expect(200)
-		expect(product.body[0].name).toBe('Klapki');
+		expect(product.body.products[0].name).toBe('Klapki');
+		expect(product.body.count).toBe(1);
 	});
 
 

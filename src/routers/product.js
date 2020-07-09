@@ -59,6 +59,7 @@ router.get('/product', async (req, res) => {
 
 		search[searchKey] = { $regex : new RegExp(searchValue, "i") };
 	};
+	const count = await Product.count(search);
 
 	try {
 		const products = await Product
@@ -69,7 +70,7 @@ router.get('/product', async (req, res) => {
 			.skip(Number(req.query.skip))
 			.sort(sort);
 
-			res.send(products);
+			res.send({ products, count });
 	} catch (e) {
 		res.status(404).send(e)
 	}
