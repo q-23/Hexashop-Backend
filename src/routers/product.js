@@ -43,6 +43,18 @@ router.post('/product', auth('admin'), upload.any(), async (req, res) => {
 	}
 });
 
+router.get('/product/cart_items', async (req, res) => {
+	const { cart_items_ids } = req.body;
+
+	try {
+		const products = await Product.find().where('_id').in(cart_items_ids).exec()
+
+		res.status(200).send(products)
+	} catch (e) {
+		console.log(e)
+		res.status(404).send()
+	}})
+
 router.get('/product', async (req, res) => {
 	const sort = {};
 	if (req.query.sortBy) {
@@ -77,7 +89,7 @@ router.get('/product', async (req, res) => {
 });
 
 router.get('/product/:id', async (req, res) => {
-	const _id = req.params.id;
+	const _id = req.params.id
 	try {
 		const product = await Product
 			.findOne({ _id })

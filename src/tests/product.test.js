@@ -386,6 +386,19 @@ describe('[PRODUCT] - ', () => {
 		expect(product.body.count).toBe(1);
 	});
 
+	test('Should find products from cart', async () => {
+		const allProducts = await Product.find();
+		const [firstProd, secondProd, thirdProd] = allProducts;
+
+		const products = await request(app)
+			.get('/product/cart_items')
+			.send({ cart_items_ids: [firstProd._id, secondProd._id, thirdProd._id] })
+			.expect(200)
+
+		expect(products.body.length).toBe(3);
+		products.body.every(product => expect(!product.images && !product.description && product.image_thumbnail && product.name && product.price))
+	});
+
 
 	test('Should delete product by ID', async () => {
 		const productFound = await Product.findOne({ name: 'Product name 1'})
