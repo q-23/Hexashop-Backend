@@ -391,12 +391,24 @@ describe('[PRODUCT] - ', () => {
 		const [firstProd, secondProd, thirdProd] = allProducts;
 
 		const products = await request(app)
-			.get('/product/cart_items')
-			.send({ cart_items_ids: [firstProd._id, secondProd._id, thirdProd._id] })
+			.get(`/product/cart_items/${[firstProd._id, secondProd._id, thirdProd._id].join(':')}`)
 			.expect(200)
 
-		expect(products.body.length).toBe(3);
-		products.body.every(product => expect(!product.images && !product.description && product.image_thumbnail && product.name && product.price))
+		expect(products.body.products.length).toBe(3);
+		expect(products.body.count).toBe(3);
+		products.body.products.forEach(product => expect(!product.images && !product.description && product.image_thumbnail && product.name && product.price))
+	});
+
+	test('Should paginate cart products', async () => {
+		const allProducts = await Product.find();
+		const [firstProd, secondProd, thirdProd] = allProducts;
+
+		const products = await request(app)
+			.get(`/product/cart_items/${[firstProd._id, secondProd._id, thirdProd._id].join(':')}`)
+			.query({ skip: 1, limit: 2 })
+			.expect(200)
+
+		expect(products.body.products.length).toBe(2);
 	});
 
 

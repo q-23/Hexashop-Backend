@@ -43,15 +43,23 @@ router.post('/product', auth('admin'), upload.any(), async (req, res) => {
 	}
 });
 
-router.get('/product/cart_items', async (req, res) => {
-	const { cart_items_ids } = req.body;
+router.get('/product/cart_items/:ids', async (req, res) => {
+	const { ids } = req.params;
+	const product_ids = ids.split(':');
 
 	try {
-		const products = await Product.find().where('_id').in(cart_items_ids).exec()
+		const products = await Product
+			.find({}, 'name price image_thumbnail')
+			.populate('image_thumbnail', 'link')
+			.where('_id')
+			.in(product_ids)
+			.limit(Number(req.query.limit))
+			.skip(Number(req.query.skip))
+			.exec();
 
-		res.status(200).send(products)
+		const count = product_ids.length;
+		res.status(200).send({ count, products })
 	} catch (e) {
-		console.log(e)
 		res.status(404).send()
 	}})
 
@@ -71,7 +79,7 @@ router.get('/product', async (req, res) => {
 
 		search[searchKey] = { $regex : new RegExp(searchValue, "i") };
 	};
-	const count = await Product.count(search);
+	const count = await Product.countDocuments(search);
 
 	try {
 		const products = await Product

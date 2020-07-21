@@ -167,21 +167,6 @@ describe('[USER] - ', () => {
         expect(adminUserResponse.body.user.isAdmin).toBeTruthy()
     });
 
-    test('Should not allow hashed passwords input', async () => {
-      const userResponse = await request(app)
-        .post('/user/new')
-        .send({
-          name: 'Jan',
-          surname: 'Kowalski',
-          city: 'Łódź',
-          street: 'Piotrkowska',
-          house_number: '93',
-          email: 'jan@kowalski.pl',
-          password: '$2b$08$A0rjzCtjYMcQ6vd69j2pNeY/c5owkxefgM/teftsrwViJYqkkQrRu',
-          postal_code: '12-345'
-        }).expect(400);
-    });
-
   test('Should not send password when retrieving user data', async () => {
     const userResponse = await request(app)
       .get('/user/me')
