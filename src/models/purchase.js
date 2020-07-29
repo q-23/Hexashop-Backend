@@ -32,6 +32,14 @@ const purchaseSchema = new mongoose.Schema({
 	customer_id: {
 		type: mongoose.Schema.Types.ObjectId,
 		required: true
+	},
+	purchased_products: {
+		type: Object,
+		required: true
+	},
+	shipping: {
+		type: Object,
+		required: true
 	}
 }, {
 	timestamps: true

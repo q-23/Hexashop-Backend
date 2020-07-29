@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 
 const Category = require('../../models/category');
+const Purchase = require('../../models/purchase');
 const Product = require('../../models/product');
 const Brand = require('../../models/brand');
 const Order = require('../../models/order');
@@ -55,6 +56,7 @@ const setupProducts = async () => {
 	await Image.deleteMany();
 	await Product.deleteMany();
 	await Category.deleteMany();
+	await Purchase.deleteMany();
 	await new User(userOne).save();
 	const images = await Promise.all(imagesArray.map(async el => await new Image(el).save()))
 	const productsArrayWithImages = populateProducts(15, images);

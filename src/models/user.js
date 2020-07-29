@@ -69,13 +69,7 @@ const userSchema = new mongoose.Schema({
 		default: false
 	},
 	verification_token: {
-		type: String,
-		validate(value) {
-			const token = jwt.verify(value, process.env.JWT_SECRET);
-			if (Date.now() >= token.exp * 1000) {
-				throw new Error('The verification token has expired.');
-			}
-		}
+		type: String
 	}
 }, {
 	timestamps: true
