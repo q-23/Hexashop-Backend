@@ -9,12 +9,14 @@ const Product = require('../models/product');
 const auth = require('../middleware/auth.js');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
+const { sendPurchaseSuccessEmail } = require('../emails/account');
+
 router.post('/purchase', auth(), async (req, res) => {
     const { products, token } = req.body;
     const idempotencyKey = v4();
 
     const purchasedProducts = await Product
-      .find({}, 'price')
+      .find({}, 'price name')
       .where('_id')
       .in(Object.keys(products));
 
@@ -47,10 +49,14 @@ router.post('/purchase', auth(), async (req, res) => {
         }, { idempotencyKey })
 
         const { status, receipt_url, receipt_email, id, shipping, } = charge;
-        await new Purchase({ status, receipt_url, receipt_email, id, amount: totalPrice, customer_id: req.user._id, purchased_products: products, shipping }).save()
+        await new Purchase({ status, receipt_url, receipt_email, id, amount: totalPrice, customer_id: req.user._id, purchased_products: products, shipping }).save();
 
+        const productsListForEmail = purchasedProducts.map(product => ({ ...product._doc, quantity: products[product._id] }));
+
+        await sendPurchaseSuccessEmail({ email: req.user.email,  name: req.user.name, invoiceLink: receipt_url, products: productsListForEmail, totalPrice });
         res.status(200).send({ message: 'Purchase successful!' });
     } catch (e) {
+        console.log(e)
         if (!e.raw) {
             return res.status(400).send({error: 'Invalid request'});
         }

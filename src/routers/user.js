@@ -44,7 +44,7 @@ router.patch('/user', auth(), async (req, res) => {
 	try {
 		const user = await User.findByIdAndUpdate(req.user._id, req.body);
 		await user.save();
-		res.send(user);
+		res.send({ message: 'Account edited successfully' });
 	} catch (e) {
 		res.status(400).send({ error: e.toString() });
 	}
