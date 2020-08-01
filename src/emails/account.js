@@ -9,7 +9,7 @@ const sendWelcomeEmail = async (email, name, linkPromise) => {
 		to: email,
 		from: process.env.SENDGRID_EMAIL,
 		subject: 'Thanks for joining in!',
-		text: `Welcome in our shop, ${name}. To complete registration, please enter the following link: ${process.env.HOST_URL}/verify_email/${authLink}`
+		text: `Welcome in our shop, ${name}. To complete registration, please enter the following link: ${process.env.FRONTEND_URL}/verify_email/${authLink}`
 	});
 };
 
