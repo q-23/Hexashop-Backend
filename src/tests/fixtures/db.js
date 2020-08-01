@@ -6,7 +6,6 @@ const Category = require('../../models/category');
 const Purchase = require('../../models/purchase');
 const Product = require('../../models/product');
 const Brand = require('../../models/brand');
-const Order = require('../../models/order');
 const Image = require('../../models/image');
 const User = require('../../models/user');
 
@@ -125,22 +124,11 @@ const setupUsers = async () => {
 	await new User(userTwo).save();
 }
 
-const setupOrders = async () => {
-	await User.deleteMany();
-	await Order.deleteMany();
-	await Product.deleteMany();
-	await new User(userTwo).save();
-	await new User(userOne).save();
-	await Promise.all(productsArray.map(async el => await new Product(el).save()));
-	await Promise.all(ordersArray.map(async el => await new Order(el).save()));
-}
-
 module.exports = {
 	productsArray,
 	setupProducts,
 	setupImages,
 	imagesArray,
-	setupOrders,
 	setupUsers,
 	userOneId,
 	userTwoId,
