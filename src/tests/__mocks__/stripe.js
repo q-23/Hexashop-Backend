@@ -56,7 +56,7 @@ Stripe.prototype.customers = {
 Stripe.prototype.charges = {
 	create() {
 		return {
-				id: 'ch_1HAOoSIepphit2IQiJC6ClA3',
+				id: `ch_1HAOoSIepphit2IQiJC6ClA3${Math.ceil(Math.random() * 100)}`,
 				object: 'charge',
 				amount: 86025,
 				amount_refunded: 0,
