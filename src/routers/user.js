@@ -15,9 +15,9 @@ router.post('/user/new', async (req, res) => {
 	try {
 		const { _id } = await user.save();
 		await sendWelcomeEmail(user.email, user.name, user.generateVerificationToken(_id));
-		res.status(201).send({ token, user });
+		res.status(201).send({ message: 'Your account was created successfully. Please confirm your e-mail.' });
 	} catch (e) {
-		res.status(400).send({ message: e.toString() });
+		res.status(400).send({ error: e.toString() });
 	}
 });
 
@@ -80,10 +80,10 @@ router.get('/user/verify/:token', async (req, res) => {
 			return res.status(403).send({ error: 'Your account is already verified. Go to login page to sign in to your account.'});
 		}
 		await User.findByIdAndUpdate(token._id, { isVerified: true })
-		res.status(200).send({ success: 'Registration successful! Please check your e-mail and click the provided link to complete your registration. You can close this page.' })
+		res.status(200).send({ message: 'Registration successful! Please check your e-mail and click the provided link to complete your registration. You can close this page.' })
 	} catch (e) {
 		console.log(e)
-		res.status(400).send({error: 'Your link is malformed. Please enter a valid verification link and try again.'})
+		res.status(400).send({ error: 'Your link is malformed. Please enter a valid verification link and try again.'})
 	}
 });
 

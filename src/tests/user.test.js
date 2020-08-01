@@ -28,7 +28,7 @@ describe('[USER] - ', () => {
             .expect(201);
 
         const { password, ...rest } = userCredentials
-        const userFound = await User.findById(response.body.user._id);
+        const userFound = await User.findOne({ email: 'jan@kowalski.pl' });
         expect(userFound).toBeTruthy();
         expect(userFound).toMatchObject(rest);
     });
@@ -88,7 +88,7 @@ describe('[USER] - ', () => {
             })
             .expect(201);
 
-        const userAdded = await User.findById(response.body.user._id)
+        const userAdded = await User.findOne({ email: 'jan@kowalski.pl' })
         expect(userAdded.password).not.toBe('asdf1234');
     });
 
@@ -164,7 +164,8 @@ describe('[USER] - ', () => {
                 isAdmin: true,
             }).expect(201);
 
-        expect(adminUserResponse.body.user.isAdmin).toBeTruthy()
+        const userAdminInDb = await User.findOne({ isAdmin: true })
+        expect(userAdminInDb).toBeTruthy()
     });
 
   test('Should not send password when retrieving user data', async () => {
@@ -213,7 +214,7 @@ describe('[USER] - ', () => {
     });
 
     test('Should verify user after clicking verification link', async () => {
-        const adminUserResponse = await request(app)
+        await request(app)
             .post('/user/new')
             .send({
                 name: 'Jan',
@@ -227,9 +228,7 @@ describe('[USER] - ', () => {
                 isAdmin: true,
             }).expect(201);
 
-        const userId = adminUserResponse.body.user._id;
-
-        const userInDb = await User.findById(userId);
+        const userInDb = await User.findOne({ email: 'jan@kowalski.pl' });
         expect(userInDb.verification_token).toBeDefined();
         expect(userInDb.isVerified).toBeFalsy();
 
@@ -237,12 +236,12 @@ describe('[USER] - ', () => {
             .get('/user/verify/' + userInDb.verification_token)
             .expect(200);
 
-        const userVerified = await User.findById(userId);
+        const userVerified = await User.findOne({ email: 'jan@kowalski.pl' });
         expect(userVerified.isVerified).toBeTruthy();
     });
 
     test('Should not verify user twice', async () => {
-        const adminUserResponse = await request(app)
+        await request(app)
             .post('/user/new')
             .send({
                 name: 'Jan',
@@ -256,9 +255,7 @@ describe('[USER] - ', () => {
                 isAdmin: true,
             }).expect(201);
 
-        const userId = adminUserResponse.body.user._id;
-
-        const userInDb = await User.findById(userId);
+        const userInDb = await User.findOne({ email: 'jan@kowalski.pl' });
         expect(userInDb.verification_token).toBeDefined();
         expect(userInDb.isVerified).toBeFalsy();
 
@@ -266,14 +263,14 @@ describe('[USER] - ', () => {
             .get('/user/verify/' + userInDb.verification_token)
             .expect(200);
 
-        const userVerified = await User.findById(userId);
+        const userVerified = await User.findOne({ email: 'jan@kowalski.pl' });
         expect(userVerified.isVerified).toBeTruthy();
 
         await request(app)
             .get('/user/verify/' + userInDb.verification_token)
             .expect(403);
 
-        const userVerifiedSecondTime = await User.findById(userId);
+        const userVerifiedSecondTime = await User.findOne({ email: 'jan@kowalski.pl' });
         expect(userVerifiedSecondTime.isVerified).toBeTruthy();
     });
 
@@ -334,7 +331,7 @@ describe('[USER] - ', () => {
             })
             .expect(400);
 
-        const userInDb = await User.findById(res.body.user._id);
+        const userInDb = await User.findOne({ email: 'testacc@testaxx.pl' });
 
         await request(app)
             .get('/user/verify/' + userInDb.verification_token)

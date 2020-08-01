@@ -44,6 +44,25 @@ describe('[CATEGORY] - ', () => {
         expect(categoryResponse.body.products.length).toBe(2)
     });
 
+    test("Should use pagination and limiter when fetching categories", async () => {
+        const category = await Category.find({ category_name: 'Kategoria pierwsza' });
+        const categoryTwo = await Category.find({ category_name: 'Kategoria druga' });
+
+        await new Product({ name: 'a', description: 'b', price: 23, category: category[0]._id }).save();
+        await new Product({ name: 'aa', description: 'bb', price: 231, category: category[0]._id }).save();
+        await new Product({ name: 'c', description: 'd', price: 23, category: [category[0]._id, categoryTwo[0]._id] }).save();
+        await new Product({ name: 'cf', description: 'sdfd', price: 231, category: [category[0]._id, categoryTwo[0]._id] }).save();
+
+        const categoryResponse = await request(app)
+          .get(`/category/${category[0]._id}`)
+          .query({ skip: 2, limit: 2 })
+          .expect(200);
+
+        expect(categoryResponse.body.category_name).toBe('Kategoria pierwsza');
+        expect(categoryResponse.body.products.length).toBe(2)
+        expect(categoryResponse.body.count).toBe(4)
+    });
+
     test('Should get all categories', async () => {
         const response = await request(app)
             .get('/category')

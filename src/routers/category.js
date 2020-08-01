@@ -20,9 +20,19 @@ router.post('/category', async (req, res) => {
 router.get('/category/:id', async (req, res) => {
     const { id } = req.params;
 
+    // console.log(req.query)
+
     try {
         const category = await Category.findById(id);
-        const products = await Product.find({ category: id });
+        const count = await Product.countDocuments({ category: id });
+        const products = await Product
+          .find({ category: id })
+          .populate('image_thumbnail', 'link')
+          .limit(Number(req.query.limit))
+          .skip(Number(req.query.skip))
+          .exec();
+
+        // console.log(products)
 
         const { category_name } = category;
 
@@ -32,7 +42,8 @@ router.get('/category/:id', async (req, res) => {
 
         res.send({
             category_name,
-            products
+            products,
+            count
         })
     } catch (e) {
         console.log(chalk.red('Error retrieving category products: ') + e);
