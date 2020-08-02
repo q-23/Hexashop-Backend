@@ -13,7 +13,7 @@ router.post('/category', async (req, res) => {
         res.status(201).send(category)
     } catch (e) {
         console.log(chalk.red('Error adding category: ') + e);
-        res.status(400).send()
+        res.status(400).send({error: e})
     }
 });
 
