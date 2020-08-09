@@ -4,23 +4,22 @@ const router = new express.Router();
 const Category = require('../models/category');
 const Product = require('../models/product');
 
+const auth = require('../middleware/auth.js');
+
 const chalk = require('chalk');
 
-router.post('/category', async (req, res) => {
+router.post('/category', auth('admin'), async (req, res) => {
     try {
         const category = await new Category(req.body).save();
-
         res.status(201).send(category)
     } catch (e) {
         console.log(chalk.red('Error adding category: ') + e);
-        res.status(400).send({error: e})
+        res.status(400).send({ error: e.message })
     }
 });
 
 router.get('/category/:id', async (req, res) => {
     const { id } = req.params;
-
-    // console.log(req.query)
 
     try {
         const category = await Category.findById(id);
@@ -61,7 +60,7 @@ router.get('/category', async (req, res) => {
     }
 });
 
-router.delete('/category/:id', async (req, res) => {
+router.delete('/category/:id', auth('admin'), async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -76,7 +75,7 @@ router.delete('/category/:id', async (req, res) => {
     }
 });
 
-router.patch('/category/:id', async (req, res) => {
+router.patch('/category/:id', auth('admin'), async (req, res) => {
     const { id } = req.params;
 
     try {

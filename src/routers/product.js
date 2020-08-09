@@ -39,7 +39,7 @@ router.post('/product', auth('admin'), upload.any(), async (req, res) => {
 		await product.save();
 		res.status(201).send(product);
 	} catch (e) {
-		res.status(400).send(e)
+		res.status(400).send({ error: e.toString() })
 	}
 });
 
