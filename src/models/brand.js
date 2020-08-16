@@ -12,6 +12,10 @@ const brandSchema = new mongoose.Schema({
 	brand_path: {
 		type: String,
 		trim: true
+	},
+	brand_image: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Image'
 	}
 }, {
 	timestamps: true

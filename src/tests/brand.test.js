@@ -2,17 +2,20 @@ const request = require('supertest');
 const Brand = require('../models/brand');
 const Product = require('../models/product');
 const app = require('../app');
-const { setupProducts } = require('./fixtures/db')
+const { setupProducts, userOne } = require('./fixtures/db')
 
 beforeEach(setupProducts)
+
+const { token } = userOne.tokens[0];
 
 describe('[BRAND] - ', () => {
     test('Should add brand', async () => {
         const response = await request(app)
             .post('/brand')
+            .set('Authorization', `Bearer ${token}`)
             .send({
                 brand_name: 'Marka pierwsza',
-                category_path: '/path'
+                brand_path: '/path'
             })
             .expect(201)
 
@@ -20,9 +23,23 @@ describe('[BRAND] - ', () => {
         expect(brandFound).toBeTruthy()
     });
 
+    test('Should add brand images', async () => {
+        const response = await request(app)
+          .post('/brand')
+          .set('Authorization', `Bearer ${token}`)
+          .attach('brand_image', './src/tests/fixtures/imgtest.png')
+          .field('brand_name', 'Brand')
+          .field('brand_path', '/brand')
+          .expect(201);
+
+        const brandFound = await Brand.findById(response.body._id)
+        expect(brandFound.brand_image).toBeTruthy()
+    });
+
     test('Should add slugified brand paths when none is provided', async () => {
         await request(app)
           .post('/brand')
+          .set('Authorization', `Bearer ${token}`)
           .send({
               brand_name: 'Kategoria pierwsza'
           })
@@ -63,6 +80,7 @@ describe('[BRAND] - ', () => {
 
         await request(app)
             .delete(`/brand/${brand._id}`)
+            .set('Authorization', `Bearer ${token}`)
             .expect(201);
 
         const productRequest = await Product.findById(product._id);
@@ -74,6 +92,7 @@ describe('[BRAND] - ', () => {
 
         const brandUpdated = await request(app)
             .patch(`/brand/${brand._id}`)
+            .set('Authorization', `Bearer ${token}`)
             .send({ brand_name: 'Marka trzecia',
                 brand_path: '/path'
             })

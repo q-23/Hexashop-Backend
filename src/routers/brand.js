@@ -1,18 +1,34 @@
 const express = require('express');
 const router = new express.Router();
 
+const auth = require('../middleware/auth.js');
+
 const Product = require('../models/product');
 const Brand = require('../models/brand');
+const Image = require('../models/image');
+const multer = require('multer');
 const chalk = require('chalk');
 
-router.post('/brand', async (req, res) => {
-    try {
-        const brand = await new Brand(req.body).save();
+const upload = multer({
+    limits: {
+        fileSize: 1000000
+    },
+    fileFilter(req, file, callback) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+            return callback(new Error('Please upload a .jpg, .jpeg or .png file'))
+        }
+        callback(undefined, true)
+    }
+});
 
+router.post('/brand', upload.single('brand_image'), auth('admin'), async (req, res) => {
+    try {
+        const brand_image = !!req.file ? await new Image(req.file.buffer) : null;
+        const brand = await new Brand({ ...req.body, brand_image }).save();
         res.status(201).send(brand)
     } catch (e) {
         console.log(chalk.red('Error adding brand: ') + e);
-        res.status(400).send()
+        res.status(400).send({ error: e.toString() })
     }
 });
 
@@ -49,7 +65,7 @@ router.get('/brand', async (req, res) => {
     }
 });
 
-router.delete('/brand/:id', async (req, res) => {
+router.delete('/brand/:id', auth('admin'), async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -64,7 +80,7 @@ router.delete('/brand/:id', async (req, res) => {
     }
 });
 
-router.patch('/brand/:id', async (req, res) => {
+router.patch('/brand/:id', auth('admin'), async (req, res) => {
     const { id } = req.params;
 
     try {

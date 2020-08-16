@@ -17,7 +17,7 @@ const categorySchema = new mongoose.Schema({
 });
 
 categorySchema.pre('findOneAndDelete', async function (next) {
-    const category = this;
+	const category = this;
 	await Product.updateMany({ category: category._conditions._id}, { $pull: {category: category._conditions._id}});
 	next();
 });

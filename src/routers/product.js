@@ -144,13 +144,14 @@ router.patch(`/product/:id`, auth('admin'), async (req, res) => {
 	const { id } = req.params;
 
 	try {
-		const product = await Product.findByIdAndUpdate({ _id: id }, req.body);
+		const product = await Product.findByIdAndUpdate({ _id: id }, req.body, { new: true });
+		await product.save();
 		if (!product) {
 			return res.status(400).send();
 		}
 		res.status(200).send(product);
 	} catch (e) {
-		res.status(500).send();
+		res.status(500).send({ error: e.toString() });
 		console.log(chalk.red('Error updating product: ') + e);
 	}
 });
