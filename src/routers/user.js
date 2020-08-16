@@ -10,7 +10,7 @@ const { sendWelcomeEmail } = require('../emails/account');
 
 router.post('/user/new', async (req, res) => {
 	const user = new User(req.body);
-	const token = await user.generateAuthToken();
+	await user.generateAuthToken();
 
 	try {
 		const { _id } = await user.save();
@@ -42,10 +42,11 @@ router.patch('/user', auth(), async (req, res) => {
 	}
 
 	try {
-		const user = await User.findByIdAndUpdate(req.user._id, req.body);
+		const user = await User.findByIdAndUpdate(req.user._id, req.body, { new: true });
 		await user.save();
 		res.send({ message: 'Account edited successfully' });
 	} catch (e) {
+		console.log(e)
 		res.status(400).send({ error: e.toString() });
 	}
 });

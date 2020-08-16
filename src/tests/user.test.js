@@ -125,10 +125,35 @@ describe('[USER] - ', () => {
 
         await request(app)
             .patch('/user')
-            .set('Authorization', `Bearer ${response.body.user.tokens[0].token}`)
+            .set('Authorization', `Bearer ${response.body.token}`)
             .send({ name: 'Jan' })
             .expect(200);
     });
+
+  test('Should update user password', async () => {
+    const newPassword = 'Testpass123'
+
+    const response = await request(app)
+      .post('/user/login')
+      .send({
+        email: userTwo.email,
+        password: userTwo.password
+      })
+      .expect(200);
+
+    await request(app)
+      .patch('/user')
+      .set('Authorization', `Bearer ${response.body.token}`)
+      .send({ password: newPassword })
+      .expect(200);
+
+    await request(app)
+      .post('/user/login')
+      .send({
+        email: userTwo.email,
+        password: newPassword
+      }).expect(200)
+  });
 
     test("Should get user's account", async () => {
         const loginResponse = await request(app)
@@ -141,7 +166,7 @@ describe('[USER] - ', () => {
 
         const accountResponse = await request(app)
             .get('/user/me')
-            .set('Authorization', `Bearer ${loginResponse.body.user.tokens[0].token}`)
+            .set('Authorization', `Bearer ${loginResponse.body.token}`)
             .expect(200)
 
         const { password, _id, tokens, ...userData } = userTwo;
@@ -150,7 +175,7 @@ describe('[USER] - ', () => {
     });
 
     test('Should add admin users', async () => {
-        const adminUserResponse = await request(app)
+        await request(app)
             .post('/user/new')
             .send({
                 name: 'Jan',
@@ -195,7 +220,7 @@ describe('[USER] - ', () => {
 
       await request(app)
           .post('/product')
-          .set('Authorization', `Bearer ${response.body.user.tokens[0].token}`)
+          .set('Authorization', `Bearer ${response.body.token}`)
           .send({
               name: 'asd',
               description: 'asdg',

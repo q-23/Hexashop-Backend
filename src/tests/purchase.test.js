@@ -1,5 +1,4 @@
 const request = require('supertest');
-const Purchase = require('../models/purchase');
 const app = require('../app');
 const { setupUsers, userTwo, productsArray } = require('./fixtures/db')
 

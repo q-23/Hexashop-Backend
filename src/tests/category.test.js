@@ -2,14 +2,14 @@ const request = require('supertest');
 const Category = require('../models/category');
 const Product = require('../models/product');
 const app = require('../app');
-const { setupProducts } = require('./fixtures/db')
-
+const { setupProducts, userOne } = require('./fixtures/db')
 beforeEach(setupProducts)
 
 describe('[CATEGORY] - ', () => {
     test('Should add category', async () => {
         const response = await request(app)
             .post('/category')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send({
                 category_name: 'Kategoria pierwsza',
                 category_path: '/path'
@@ -23,6 +23,7 @@ describe('[CATEGORY] - ', () => {
     test('Should not add category without category path', async () => {
         await request(app)
           .post('/category')
+          .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
           .send({
               category_name: 'Kategoria pierwsza'
           })
@@ -78,6 +79,7 @@ describe('[CATEGORY] - ', () => {
 
         await request(app)
             .delete(`/category/${category[0]._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .expect(201);
 
         const productRequest = await Product.findById(product._id);
@@ -89,10 +91,11 @@ describe('[CATEGORY] - ', () => {
 
         const categoryUpdated = await request(app)
             .patch(`/category/${category[0]._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send({ category_name: 'Kategoria trzecia',
                 category_path: '/path'
-            })
-            .expect(201);
+              })
+              .expect(201);
 
         expect(categoryUpdated.body.category_name).toBe('Kategoria trzecia');
     });

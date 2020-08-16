@@ -68,7 +68,6 @@ router.get('/purchase/my_purchases', auth(), async (req, res) => {
     const { user } = req;
     try {
         const userPurchases = await Purchase.find({ customer_id: user._id }) ;
-        console.log(userPurchases)
         res.status(200).send(userPurchases);
     } catch (e) {
         console.log(e);
