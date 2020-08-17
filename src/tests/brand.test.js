@@ -23,6 +23,18 @@ describe('[BRAND] - ', () => {
         expect(brandFound).toBeTruthy()
     });
 
+    test('Should create links to brand images before saving', async () => {
+        const response = await request(app)
+          .post('/brand')
+          .set('Authorization', `Bearer ${token}`)
+          .attach('brand_image', './src/tests/fixtures/imgtest.png')
+          .field('brand_name', 'Brand')
+          .field('brand_path', '/brand')
+          .expect(201)
+        const brandFound = await Brand.findById(response.body._id);
+        expect(String(brandFound.brand_image).startsWith(process.env.HOST_URL)).toBeTruthy()
+    })
+
     test('Should add brand images', async () => {
         const response = await request(app)
           .post('/brand')
@@ -47,7 +59,7 @@ describe('[BRAND] - ', () => {
 
         const brand = await Brand.findOne({brand_name: 'Kategoria pierwsza'});
 
-        expect(brand.brand_path).toBe('Kategoria-pierwsza')
+        expect(brand.brand_path).toBe('/kategoria-pierwsza')
     });
 
     test("Should get brand and it's products", async () => {

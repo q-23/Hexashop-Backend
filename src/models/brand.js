@@ -14,8 +14,7 @@ const brandSchema = new mongoose.Schema({
 		trim: true
 	},
 	brand_image: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Image'
+		type: String
 	}
 }, {
 	timestamps: true
@@ -30,7 +29,15 @@ brandSchema.pre('findOneAndDelete', async function (next) {
 brandSchema.pre('save', function (next) {
 	const brand = this;
 	if(!brand.brand_path) {
-		brand.brand_path = slugify(brand.brand_name)
+		brand.brand_path = '/' + slugify(brand.brand_name).toLowerCase();
+	}
+	next();
+});
+
+brandSchema.pre('save', async function (next) {
+	const brand = this;
+	if (brand.brand_image) {
+		brand.brand_image = `${process.env.HOST_URL}/image/${brand.brand_image._id}`;
 	}
 	next();
 });
