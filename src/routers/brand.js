@@ -23,7 +23,7 @@ const upload = multer({
 
 router.post('/brand', upload.single('brand_image'), auth('admin'), async (req, res) => {
     try {
-        const brand_image = !!req.file ? await new Image(req.file.buffer) : null;
+        const brand_image = !!req.file ? await new Image({ image: req.file.buffer }).save() : null;
         const brand = await new Brand({ ...req.body, brand_image }).save();
         res.status(201).send(brand)
     } catch (e) {
