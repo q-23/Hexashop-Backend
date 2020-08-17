@@ -14,6 +14,10 @@ const brandSchema = new mongoose.Schema({
 		trim: true
 	},
 	brand_image: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Image'
+	},
+	brand_image_link: {
 		type: String
 	}
 }, {
@@ -37,7 +41,7 @@ brandSchema.pre('save', function (next) {
 brandSchema.pre('save', async function (next) {
 	const brand = this;
 	if (brand.brand_image) {
-		brand.brand_image = `${process.env.HOST_URL}/image/${brand.brand_image._id}`;
+		brand.brand_image_link = `${process.env.HOST_URL}/image/${brand.brand_image._id}`;
 	}
 	next();
 });

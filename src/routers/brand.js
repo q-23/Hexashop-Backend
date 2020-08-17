@@ -57,7 +57,7 @@ router.get('/brand/:id', async (req, res) => {
 
 router.get('/brand', async (req, res) => {
     try {
-        const brands = await Brand.find();
+        const brands = await Brand.find({}, 'brand_name brand_path brand_image_link');
         res.status(200).send(brands);
     } catch (e) {
         console.log(chalk.red('Error retrieving brands: ') + e);

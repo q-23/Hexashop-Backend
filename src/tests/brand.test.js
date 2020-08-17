@@ -32,7 +32,7 @@ describe('[BRAND] - ', () => {
           .field('brand_path', '/brand')
           .expect(201)
         const brandFound = await Brand.findById(response.body._id);
-        expect(String(brandFound.brand_image).startsWith(process.env.HOST_URL)).toBeTruthy()
+        expect(String(brandFound.brand_image_link).startsWith(process.env.HOST_URL)).toBeTruthy()
     })
 
     test('Should add brand images', async () => {
