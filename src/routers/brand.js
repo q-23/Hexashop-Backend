@@ -25,7 +25,7 @@ router.post('/brand', upload.single('brand_image'), auth('admin'), async (req, r
     try {
         const brand_image = !!req.file ? await new Image({ image: req.file.buffer }).save() : null;
         const brand = await new Brand({ ...req.body, brand_image }).save();
-        res.status(201).send(brand)
+        res.status(201).send(brand);
     } catch (e) {
         console.log(chalk.red('Error adding brand: ') + e);
         res.status(400).send({ error: e.toString() })
@@ -57,8 +57,13 @@ router.get('/brand/:id', async (req, res) => {
 
 router.get('/brand', async (req, res) => {
     try {
-        const brands = await Brand.find({}, 'brand_name brand_path brand_image_link');
-        res.status(200).send(brands);
+        console.log(req.query)
+        const brands = await Brand
+          .find({}, 'brand_name brand_path brand_image_link')
+          .limit(Number(req.query.limit))
+          .skip(Number(req.query.skip));
+        const count = await Brand.countDocuments({});
+        res.status(200).send({ count, brands });
     } catch (e) {
         console.log(chalk.red('Error retrieving brands: ') + e);
         res.status(500).send();

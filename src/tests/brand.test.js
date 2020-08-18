@@ -23,6 +23,25 @@ describe('[BRAND] - ', () => {
         expect(brandFound).toBeTruthy()
     });
 
+    test('Should send brands count', async () => {
+        const response = await request(app)
+          .post('/brand')
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+              brand_name: 'Marka pierwsza',
+              brand_path: '/path'
+          })
+          .expect(201)
+
+        const brandFound = await Brand.findById(response.body._id)
+        expect(brandFound).toBeTruthy();
+
+        const allBrandsResponse = await request(app)
+          .get('/brand')
+          .expect(200);
+        expect(allBrandsResponse.body.count).toBe(3)
+    });
+
     test('Should create links to brand images before saving', async () => {
         const response = await request(app)
           .post('/brand')
@@ -103,7 +122,42 @@ describe('[BRAND] - ', () => {
             .get('/brand')
             .expect(200);
 
-        expect(response.body.length).toBe(2);
+        expect(response.body.count).toBe(2);
+        expect(response.body.brands.length).toBe(2);
+    });
+
+    test('Should use pagination', async () => {
+        await request(app)
+          .post('/brand')
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+              brand_name: 'Marka pierdwsza',
+              brand_path: '/path'
+          })
+
+        await request(app)
+          .post('/brand')
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+              brand_name: 'Marka pieasrwsza',
+              brand_path: '/path'
+          })
+
+        await request(app)
+          .post('/brand')
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+              brand_name: 'Marka pierwsza',
+              brand_path: '/path'
+          })
+
+        const response = await request(app)
+          .get('/brand')
+          .query({limit: 3, skip: 4})
+          .expect(200);
+
+        expect(response.body.count).toBe(5);
+        expect(response.body.brands.length).toBe(1);
     });
 
     test('Should delete brand and update linked products brand array', async () => {
