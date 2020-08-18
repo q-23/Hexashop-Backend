@@ -45,7 +45,7 @@ const categoryArray = [
 const productsArray = populateProducts(15);
 
 const brandsArray = [
-	{brand_name: 'Marka pierwsza'},
+	{brand_name: 'Marka piąta'},
 	{ brand_name: 'Marka druga', brand_path: 'lorem' }
 ]
 

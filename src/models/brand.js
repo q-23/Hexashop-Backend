@@ -8,11 +8,13 @@ const brandSchema = new mongoose.Schema({
 	brand_name: {
 		type: String,
 		trim: true,
-		required: true
+		required: true,
+		unique: true
 	},
 	brand_path: {
 		type: String,
-		trim: true
+		trim: true,
+		unique: true
 	},
 	brand_image: {
 		type: mongoose.Schema.Types.ObjectId,

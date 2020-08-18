@@ -103,7 +103,7 @@ describe('[BRAND] - ', () => {
     });
 
     test("Should get brand and it's products", async () => {
-        const brand = await Brand.findOne({ brand_name: 'Marka pierwsza' });
+        const brand = await Brand.findOne({ brand_name: 'Marka piąta' });
         const brandTwo = await Brand.findOne({ brand_name: 'Marka druga' });
 
         await new Product({ name: 'a', description: 'b', price: 23, brand: brand._id }).save();
@@ -113,8 +113,38 @@ describe('[BRAND] - ', () => {
             .get(`/brand/${brand._id}`)
             .expect(200)
 
-        expect(categoryResponse.body.brand_name).toBe('Marka pierwsza');
+        expect(categoryResponse.body.brand_name).toBe('Marka piąta');
         expect(categoryResponse.body.products.length).toBe(1)
+    });
+
+    test("Should use pagination when fetching brand products and send items count", async () => {
+        const brand = await Brand.findOne({ brand_name: 'Marka piąta' });
+
+        await new Product({ name: 'a', description: 'b', price: 23, brand: brand._id }).save();
+        await new Product({ name: 'a', description: 'b', price: 23, brand: brand._id }).save();
+        await new Product({ name: 'a', description: 'b', price: 23, brand: brand._id }).save();
+        await new Product({ name: 'a', description: 'b', price: 23, brand: brand._id }).save();
+        await new Product({ name: 'a', description: 'b', price: 23, brand: brand._id }).save();
+        await new Product({ name: 'a', description: 'b', price: 23, brand: brand._id }).save();
+        await new Product({ name: 'a', description: 'b', price: 23, brand: brand._id }).save();
+        await new Product({ name: 'a', description: 'b', price: 23, brand: brand._id }).save();
+
+        const categoryResponse = await request(app)
+          .get(`/brand/${brand._id}`)
+          .expect(200)
+
+        expect(categoryResponse.body.brand_name).toBe('Marka piąta');
+        expect(categoryResponse.body.products.length).toBe(8);
+        expect(categoryResponse.body.count).toBe(8);
+
+        const categoryResponse2 = await request(app)
+          .get(`/brand/${brand._id}`)
+          .query({limit: 5, skip: 5})
+          .expect(200)
+
+        expect(categoryResponse2.body.brand_name).toBe('Marka piąta');
+        expect(categoryResponse2.body.products.length).toBe(3);
+        expect(categoryResponse2.body.count).toBe(8);
     });
 
     test('Should get all brands', async () => {
@@ -126,13 +156,13 @@ describe('[BRAND] - ', () => {
         expect(response.body.brands.length).toBe(2);
     });
 
-    test('Should use pagination', async () => {
+    test('Should use pagination when fetching brands', async () => {
         await request(app)
           .post('/brand')
           .set('Authorization', `Bearer ${token}`)
           .send({
               brand_name: 'Marka pierdwsza',
-              brand_path: '/path'
+              brand_path: '/paath'
           })
 
         await request(app)
@@ -140,15 +170,15 @@ describe('[BRAND] - ', () => {
           .set('Authorization', `Bearer ${token}`)
           .send({
               brand_name: 'Marka pieasrwsza',
-              brand_path: '/path'
+              brand_path: '/padth'
           })
 
         await request(app)
           .post('/brand')
           .set('Authorization', `Bearer ${token}`)
           .send({
-              brand_name: 'Marka pierwsza',
-              brand_path: '/path'
+              brand_name: 'Marka piętnasta',
+              brand_path: '/pfath'
           })
 
         const response = await request(app)
@@ -161,7 +191,7 @@ describe('[BRAND] - ', () => {
     });
 
     test('Should delete brand and update linked products brand array', async () => {
-        const brand = await Brand.findOne({ brand_name: 'Marka pierwsza' });
+        const brand = await Brand.findOne({ brand_name: 'Marka piąta' });
 
         const product = await new Product({ name: 'a', description: 'b', price: 23, brand_name: brand._id }).save();
 
@@ -175,7 +205,7 @@ describe('[BRAND] - ', () => {
     });
 
     test('Should update brand', async () => {
-        const brand = await Brand.findOne({ brand_name: 'Marka pierwsza' });
+        const brand = await Brand.findOne({ brand_name: 'Marka piąta' });
 
         const brandUpdated = await request(app)
             .patch(`/brand/${brand._id}`)

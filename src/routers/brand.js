@@ -37,7 +37,13 @@ router.get('/brand/:id', async (req, res) => {
 
     try {
         const brand = await Brand.findById(id);
-        const products = await Product.find({ brand: id });
+        const products = await Product
+          .find({ brand: id })
+          .populate('image_thumbnail', 'link')
+          .limit(Number(req.query.limit))
+          .skip(Number(req.query.skip));
+
+        const count = await Product.countDocuments({ brand: id });
 
         const { brand_name } = brand;
 
@@ -47,7 +53,8 @@ router.get('/brand/:id', async (req, res) => {
 
         res.send({
             brand_name,
-            products
+            products,
+            count
         })
     } catch (e) {
         console.log(chalk.red('Error retrieving brand products: ') + e);
@@ -57,7 +64,6 @@ router.get('/brand/:id', async (req, res) => {
 
 router.get('/brand', async (req, res) => {
     try {
-        console.log(req.query)
         const brands = await Brand
           .find({}, 'brand_name brand_path brand_image_link')
           .limit(Number(req.query.limit))

@@ -438,7 +438,7 @@ describe('[PRODUCT] - ', () => {
 	});
 
 	test('Should send brand name', async () => {
-		const brand = await Brand.findOne({ brand_name: 'Marka pierwsza' });
+		const brand = await Brand.findOne({ brand_name: 'Marka piąta' });
 
 		const product = await request(app)
 			.post('/product')
@@ -448,7 +448,7 @@ describe('[PRODUCT] - ', () => {
 		const productResponse = await request(app)
 			.get(`/product/${product.body._id}`)
 
-		expect(productResponse.body.brand).toMatchObject({ brand_name: 'Marka pierwsza' })
+		expect(productResponse.body.brand).toMatchObject({ brand_name: 'Marka piąta' })
 	});
 
 	test('Should delete product images when deleting product', async () => {
