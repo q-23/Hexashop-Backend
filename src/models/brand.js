@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const slugify = require('slugify');
 
 const Product = require('./product');
+const Image = require('./image');
 
 const brandSchema = new mongoose.Schema({
 	brand_name: {
@@ -26,6 +27,11 @@ const brandSchema = new mongoose.Schema({
 
 brandSchema.pre('findOneAndDelete', async function (next) {
 	const brand = this;
+	const brandDocument = await Brand.findById(brand._conditions._id);
+	const brandObject = await brandDocument.toObject();
+	if (brandObject.brand_image) {
+		await Image.findByIdAndDelete(brandObject.brand_image);
+	}
 	await Product.updateMany({ brand_name: brand._conditions._id}, { brand_name: null });
 	next();
 });

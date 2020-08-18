@@ -73,7 +73,7 @@ router.delete('/brand/:id', auth('admin'), async (req, res) => {
         if (!brand) {
             res.status(404).send();
         }
-        res.status(201).send();
+        res.status(200).send({ message: 'Successfully deleted brand.' });
     } catch (e) {
         console.log(chalk.red('Error deleting brand: ') + e);
         res.status(500).send();
