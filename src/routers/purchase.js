@@ -20,9 +20,9 @@ router.post('/purchase', auth(), async (req, res) => {
       .where('_id')
       .in(Object.keys(products));
 
-    const totalPrice = purchasedProducts.reduce((accumulator, value) => {
+    const totalPrice = Math.ceil(purchasedProducts.reduce((accumulator, value) => {
         return accumulator += products[value._id] * value.price;
-    }, 0) * 100;
+    }, 0) * 100);
 
     try {
         const customer = await stripe.customers.create({
@@ -56,7 +56,6 @@ router.post('/purchase', auth(), async (req, res) => {
         await sendPurchaseSuccessEmail({ email: req.user.email,  name: req.user.name, invoiceLink: receipt_url, products: productsListForEmail, totalPrice });
         res.status(200).send({ message: 'Purchase successful!' });
     } catch (e) {
-        console.log(e)
         if (!e.raw) {
             return res.status(400).send({error: 'Invalid request'});
         }
@@ -70,7 +69,6 @@ router.get('/purchase/my_purchases', auth(), async (req, res) => {
         const userPurchases = await Purchase.find({ customer_id: user._id }) ;
         res.status(200).send(userPurchases);
     } catch (e) {
-        console.log(e);
         req.status(400).send({ error: "We couldn't retrieve your purchases." })
     }
 
