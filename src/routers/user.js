@@ -5,6 +5,8 @@ const User = require('../models/user');
 
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth.js');
+const moment = require('moment');
+const bcrypt = require('bcrypt');
 
 const { sendWelcomeEmail, sendPasswordChangeEmail } = require('../emails/account');
 
@@ -88,6 +90,26 @@ router.get('/user/verify/:token', async (req, res) => {
 	}
 });
 
+router.get('/user/reset_password/:token', async (req, res) => {
+	const { token } = req.params;
+	try {
+		const tokenContent = jwt.verify(token, process.env.JWT_SECRET);
+		if (!tokenContent || !tokenContent._id || tokenContent.type !== 'passwordChange') {
+			return res.status(500).send({ error: 'Wrong verification link.' })
+		}
+		const user = await User.findOne({ 'password_change_tokens.token': token });
+		const userObject = await user.toObject();
+		const currentToken = userObject.password_change_tokens.find(element => element.token === token);
+		if (currentToken.password_changed_date !== 'pending') {
+			res.status(500).send({ error: 'Your password has already been changed.' });
+		}
+		res.status(200).send();
+	} catch (e) {
+		console.log(e)
+		res.status(500).send({ error: e.toString() });
+	}
+});
+
 router.get('/user/reset_password', async (req, res) => {
 	const { email } = req.query;
 	try {
@@ -98,6 +120,22 @@ router.get('/user/reset_password', async (req, res) => {
 		const passwordChangeToken = await user.generatePasswordChangeToken(user._id);
 		await sendPasswordChangeEmail({ email, passwordChangeToken });
 		return res.status(200).send({ message: 'Password reset link sent. Please check your inbox.' });
+	} catch (e) {
+		res.status(500).send();
+	}
+});
+
+router.patch('/user/reset_password', async (req, res) => {
+	const token = req.header('Authorization').replace('Bearer ', '');
+	const { password } = req.body;
+	try {
+		const user = await User.findOneAndUpdate({ 'password_change_tokens.token': token }, {
+			password: await bcrypt.hash(password, 8), $set: {
+				'password_change_tokens.$.password_changed_date': moment().format()
+			}
+		});
+		await user.save();
+		res.status(200).send({ message: 'Password changed successfully. You can log in now using your new password.' });
 	} catch (e) {
 		res.status(500).send();
 	}
