@@ -128,7 +128,7 @@ router.get('/user/reset_password', async (req, res) => {
 		await sendPasswordChangeEmail({ email, passwordChangeToken });
 		return res.status(200).send({ message: 'Password reset link sent. Please check your inbox.' });
 	} catch (e) {
-		res.status(500).send();
+		res.status(400).send({ error: e.toString() });
 	}
 });
 
