@@ -369,4 +369,15 @@ describe('[USER] - ', () => {
             })
             .expect(200);
     });
+
+    test('Should reset user password', async () => {
+      await request(app)
+        .get('/user/reset_password')
+        .query({ email: userTwo.email })
+        .expect(200)
+
+      const user = await User.findOne({ _id: userTwo._id });
+      expect(user.password_change_tokens.length).toBe(1);
+      expect(user.password_change_tokens[0].password_changed_date).toBe('pending');
+    })
 });

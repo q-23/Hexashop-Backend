@@ -35,7 +35,17 @@ const sendPurchaseSuccessEmail = async ({email, name, products, invoiceLink, tot
 	})
 }
 
+const sendPasswordChangeEmail = async ({email, passwordChangeToken}) => {
+	await sgMail.send({
+		to: email,
+		from: process.env.SENDGRID_EMAIL,
+		subject: 'Change your password to Hexashop',
+		text: `Hello, here's your password reset link: ${process.env.FRONTEND_URL}/reset_password/${passwordChangeToken}`
+	});
+};
+
 module.exports = {
-    sendWelcomeEmail,
-		sendPurchaseSuccessEmail
+	sendWelcomeEmail,
+	sendPasswordChangeEmail,
+	sendPurchaseSuccessEmail
 };

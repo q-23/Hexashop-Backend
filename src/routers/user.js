@@ -6,7 +6,7 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth.js');
 
-const { sendWelcomeEmail } = require('../emails/account');
+const { sendWelcomeEmail, sendPasswordChangeEmail } = require('../emails/account');
 
 router.post('/user/new', async (req, res) => {
 	const user = new User(req.body);
@@ -85,6 +85,21 @@ router.get('/user/verify/:token', async (req, res) => {
 	} catch (e) {
 		console.log(e)
 		res.status(400).send({ error: 'Your link is malformed. Please enter a valid verification link and try again.'})
+	}
+});
+
+router.get('/user/reset_password', async (req, res) => {
+	const { email } = req.query;
+	try {
+		const user = await User.findOne({ email });
+		if(!user) {
+			return res.status(200).send()
+		}
+		const passwordChangeToken = await user.generatePasswordChangeToken(user._id);
+		await sendPasswordChangeEmail({ email, passwordChangeToken });
+		return res.status(200).send({ message: 'Password reset link sent. Please check your inbox.' });
+	} catch (e) {
+		res.status(500).send();
 	}
 });
 
