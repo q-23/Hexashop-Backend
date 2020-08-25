@@ -105,7 +105,6 @@ router.get('/user/reset_password/:token', async (req, res) => {
 		}
 		res.status(200).send();
 	} catch (e) {
-		console.log(e)
 		res.status(500).send({ error: e.toString() });
 	}
 });
@@ -114,6 +113,11 @@ router.get('/user/reset_password', async (req, res) => {
 	const { email } = req.query;
 	try {
 		const user = await User.findOne({ email });
+		const userObject = await user.toObject();
+		const isTokenAlreadyGenerated = userObject.password_change_tokens.some(token => token.password_changed_date === 'pending');
+		if(isTokenAlreadyGenerated) {
+			return res.status(400).send({ error: 'Password reset link already generated! Please check your e-mail.' });
+		}
 		if(!user) {
 			return res.status(200).send()
 		}

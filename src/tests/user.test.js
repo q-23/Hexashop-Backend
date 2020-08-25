@@ -406,9 +406,21 @@ describe('[USER] - ', () => {
 
     expect(response.body.message).toBe('Password changed successfully. You can log in now using your new password.');
 
-    const loginreq = await request(app)
+    await request(app)
       .post('/user/login')
       .send({ email: userTwo.email, password })
       .expect(200);
+  })
+
+  test('Should not generate more active token', async () => {
+    await request(app)
+      .get('/user/reset_password')
+      .query({ email: userTwo.email })
+      .expect(200)
+
+    await request(app)
+      .get('/user/reset_password')
+      .query({ email: userTwo.email })
+      .expect(400)
   })
 });
