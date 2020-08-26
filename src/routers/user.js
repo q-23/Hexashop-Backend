@@ -113,11 +113,11 @@ router.get('/user/reset_password', async (req, res) => {
 	const { email } = req.query;
 	try {
 		const user = await User.findOne({ email });
+		if(!user) {
+			return res.status(200).send({ message: 'Success. If provided email is registered in our shop, password reset link has been sent.' })
+		}
 		const userObject = await user.toObject();
 		const isTokenAlreadyGenerated = userObject.password_change_tokens.some(token => token.password_changed_date === 'pending');
-		if(!user) {
-			return res.status(200).send()
-		}
 		if (!userObject.isVerified) {
 			return res.status(400).send({ error: 'Please verify your e-mail first.' })
 		}
@@ -126,7 +126,7 @@ router.get('/user/reset_password', async (req, res) => {
 		}
 		const passwordChangeToken = await user.generatePasswordChangeToken(user._id);
 		await sendPasswordChangeEmail({ email, passwordChangeToken });
-		return res.status(200).send({ message: 'Password reset link sent. Please check your inbox.' });
+		return res.status(200).send({ message: 'Success. If provided email is registered in our shop, password reset link has been sent.' });
 	} catch (e) {
 		res.status(400).send({ error: e.toString() });
 	}
