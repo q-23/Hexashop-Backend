@@ -137,6 +137,9 @@ router.patch('/user/reset_password', async (req, res) => {
 	const { password } = req.body;
 	try {
 		const userCheckToken = await User.findOne({ 'password_change_tokens.token': token });
+		if(!userCheckToken) {
+			return res.status(400).send({ errorq: 'Invalid password reset link.' })
+		}
 		const userCheckTokenObject = await userCheckToken.toObject();
 		const currentToken = userCheckTokenObject.password_change_tokens.find(userToken => userToken.token === token);
 		if (currentToken.password_changed_date !== 'pending') {
@@ -151,7 +154,8 @@ router.patch('/user/reset_password', async (req, res) => {
 		await user.save();
 		res.status(200).send({ message: 'Password changed successfully. You can log in now using your new password.' });
 	} catch (e) {
-		res.status(500).send();
+		console.log(e)
+		res.status(500).send({ error: e.toString() });
 	}
 });
 

@@ -443,6 +443,14 @@ describe('[USER] - ', () => {
 
   })
 
+  test('Should decline invalid tokens', async () => {
+    const res = await request(app)
+      .patch('/user/reset_password')
+      .set('Authorization', `Bearer somekindofbadtoken`)
+      .send({ password: 'Secondpassword123' })
+      .expect(400);
+    expect(res.body.error).toBe( 'Invalid password reset link.' )
+  })
 
   test('Should not generate more active token', async () => {
     await request(app)
