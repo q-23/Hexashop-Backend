@@ -412,6 +412,38 @@ describe('[USER] - ', () => {
       .expect(200);
   })
 
+
+  test('Should not let reusing password reset token', async () => {
+    await request(app)
+      .get('/user/reset_password')
+      .query({ email: userTwo.email })
+      .expect(200)
+
+    const user = await User.findOne({ _id: userTwo._id });
+    const userObject = await user.toObject();
+    const { password_change_tokens } = userObject;
+    const { token } = password_change_tokens[0];
+
+    await request(app)
+      .patch('/user/reset_password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ password: 'Newpass123' })
+      .expect(200);
+
+    await request(app)
+      .post('/user/login')
+      .send({ email: userTwo.email, password: 'Newpass123' })
+      .expect(200);
+
+    await request(app)
+      .patch('/user/reset_password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ password: 'Secondpassword123' })
+      .expect(400);
+
+  })
+
+
   test('Should not generate more active token', async () => {
     await request(app)
       .get('/user/reset_password')

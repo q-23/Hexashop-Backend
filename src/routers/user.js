@@ -136,6 +136,13 @@ router.patch('/user/reset_password', async (req, res) => {
 	const token = req.header('Authorization').replace('Bearer ', '');
 	const { password } = req.body;
 	try {
+		const userCheckToken = await User.findOne({ 'password_change_tokens.token': token });
+		const userCheckTokenObject = await userCheckToken.toObject();
+		const currentToken = userCheckTokenObject.password_change_tokens.find(userToken => userToken.token === token);
+		if (currentToken.password_changed_date !== 'pending') {
+			return res.status(400).send({ error: 'Password has already been changed. Link expired.' })
+		}
+
 		const user = await User.findOneAndUpdate({ 'password_change_tokens.token': token }, {
 			password: await bcrypt.hash(password, 8), $set: {
 				'password_change_tokens.$.password_changed_date': moment().format()
