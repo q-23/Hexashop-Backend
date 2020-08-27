@@ -138,7 +138,7 @@ router.patch('/user/reset_password', async (req, res) => {
 	try {
 		const userCheckToken = await User.findOne({ 'password_change_tokens.token': token });
 		if(!userCheckToken) {
-			return res.status(400).send({ errorq: 'Invalid password reset link.' })
+			return res.status(400).send({ error: 'Invalid password reset link.' })
 		}
 		const userCheckTokenObject = await userCheckToken.toObject();
 		const currentToken = userCheckTokenObject.password_change_tokens.find(userToken => userToken.token === token);
